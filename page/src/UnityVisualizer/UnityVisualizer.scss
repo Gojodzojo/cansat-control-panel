@@ -1,0 +1,19 @@
+.UnityVisualiser {
+    width: 500px;
+    height: 500px;
+    position: relative;
+
+    #onCanvas {
+        z-index: 1;
+        position: absolute;
+
+        button {
+            margin-right: 10px;
+        }
+    }
+    
+    canvas {
+        z-index: 0;
+        position: absolute;
+    }
+}
