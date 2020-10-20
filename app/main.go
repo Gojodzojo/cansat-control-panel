@@ -1,27 +1,92 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"lorca"
+	"math"
+	"strings"
+)
 
-	"github.com/zserge/lorca"
+const (
+	frameRate  = 60
+	airDensity = 1.225
+)
+
+var (
+	gravity          Vector
+	windAcceleration Vector
+	position         Vector
+	velocity         Vector
+	canSatMass       float64
+	airCS            float64
+	flightTime       uint
+	active           bool
+	ui               lorca.UI
 )
 
 func main() {
-	ui, _ := lorca.New("", "", 480, 320)
-	// Bind Go function to be available in JS. Go function may be long-running and
-	// blocking - in JS it's represented with a Promise.
-	ui.Bind("add", func(a, b int) int { return a + b })
-	
-	ui.Load("http://localhost:3000/")
+	gravity = Vector{0, -9.80665, 0}
+	active = false
 
-	// Call JS function from Go. Functions may be asynchronous, i.e. return promises
-	n := ui.Eval(`Math.random()`).Float()
-	fmt.Println(n)
+	addr, err := serve()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// Call JS that calls Go and so on and so on...
-	m := ui.Eval(`add(2, 3)`).Int()
-	fmt.Println(m)
+	ui, _ = lorca.New(addr, "./user-data-dir", 1000, 1000)
+	go simulationLoop()
 
-	// Wait for the browser window to be closed
+	ui.Bind("startSimulation", func() {
+		canSatMass = float64(jsVar("canSatMass").Float())
+		airCS = float64(jsVar("airCS").Float())
+
+		windSpeed := jsVar("windSpeed").Float()
+		windAzimuth := jsVar("windAzimuth").Float()
+
+		rad := deg2rad(float64(windAzimuth))
+		windForce := Vector{math.Cos(rad) * -1, 0, math.Sin(rad) * -1}
+		if windAzimuth <= 180 {
+			windForce.multiplyByScalar(-1)
+		}
+
+		/* https://www.engineeringtoolbox.com/wind-load-d_1775.html */
+		canSatSurfaceArea := jsVar("canSatSurfaceArea").Float()
+		windForceVal := 0.5 * canSatSurfaceArea * airDensity * float32(math.Pow(float64(windSpeed), 2))
+		windForce.multiplyByScalar(float64(windForceVal))
+		windAcceleration = windForce
+		windAcceleration.multiplyByScalar(1 / canSatMass)
+
+		originalHeight := float64(jsVar("originalHeight").Float())
+		position = Vector{0, originalHeight, 0}
+		velocity = Vector{0, 0, 0}
+
+		jsFunc("setTime", "0")
+		flightTime = 0
+		active = true
+	})
+
+	ui.Bind("pauseSimulation", func() {
+		active = false
+		jsFunc("setIsPaused", "true")
+	})
+
+	ui.Bind("resumeSimulation", func() {
+		active = true
+		jsFunc("setIsPaused", "false")
+	})
+
 	<-ui.Done()
+}
+
+func jsFunc(funcName string, arguments ...string) lorca.Value {
+	jsCode := "contextValues." + funcName + "(" + strings.Join(arguments, ",") + ")"
+	return ui.Eval(jsCode)
+}
+
+func jsVar(varName string) lorca.Value {
+	return ui.Eval("contextValues." + varName)
+}
+
+func deg2rad(degAngle float64) float64 {
+	return math.Pi * 2 * (degAngle / 360)
 }

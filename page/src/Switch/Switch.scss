@@ -1,0 +1,41 @@
+.Switch {
+    visibility: hidden;
+    position: relative;
+    width: calc(var(--switch-height) * 2);
+    height: var(--switch-height);
+    margin: 0;
+
+    &::before {
+        content: '';
+        visibility: visible;
+        background-color: #201f1f;
+        display: block;
+        border-radius: var(--switch-height);
+        width: calc(var(--switch-height) * 2);
+        height: var(--switch-height);
+        transition: background-color var(--animation-duration) ease-out;
+    }
+
+    &::after {
+        content: '';
+        visibility: visible;
+        display: block;
+        background-color: #2d2c2c;
+        width: var(--ball-height);
+        height: var(--ball-height);
+        border-radius: var(--ball-height);
+        transform: translate(var(--ball-gap), calc(-100% - var(--ball-gap)));
+        transition: transform var(--animation-duration) ease-out;
+    }
+
+    &:checked {
+        &::before {
+            background-color: var(--checked-color);
+        }
+        &::after {
+            transform: translate(100%, -100%);
+            transform: translate(calc( (var(--switch-height) * 2) - var(--ball-height) - var(--ball-gap)), calc(-100% - var(--ball-gap)));
+            background-color: white;
+        }
+    }
+}

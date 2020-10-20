@@ -10,11 +10,14 @@
     "@types/node": "^12.12.62",
     "@types/react": "^16.9.49",
     "@types/react-dom": "^16.9.8",
+    "@types/react-vis": "^1.11.4",
+    "homepage": ".",
     "node-sass": "^4.14.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.3",
     "react-unity-webgl": "^7.1.10",
+    "react-vis": "^1.11.7",
     "typescript": "^3.7.5"
   },
   "scripts": {
