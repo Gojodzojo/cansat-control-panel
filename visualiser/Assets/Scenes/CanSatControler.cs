@@ -1,7 +1,14 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 
 public class CanSatControler : MonoBehaviour
 {        
+    void Start() {
+        WebGLInput.captureAllKeyboardInput = false;
+        UnityEvent load = new UnityEvent();
+        load.Invoke();
+    }
+
     public void moveCanSat(string newPositionStr) {        
         Vector3 newPositionVec = JsonUtility.FromJson<Vector3>(newPositionStr);
         transform.position = newPositionVec;        

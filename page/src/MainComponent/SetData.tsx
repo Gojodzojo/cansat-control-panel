@@ -1,31 +1,12 @@
-import React, { useCallback, useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { startSimulation } from '..'
-import { Switch } from '../Switch/Switch'
-import { context } from '../App/App'
+import { context, ReducerActions } from '../App/App'
+import { OrangeSwitch } from '../Switch/OrangeSwitch'
 import { getPosition, getWeather } from '../usefullStuff'
-import { Modes } from './MainComponent'
+import { AppModes } from './MainComponent'
 import { Table, TableEntry } from './Table'
 
-interface OrangeSwitchProps {
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-}
-
-const OrangeSwitch: React.FC<OrangeSwitchProps> = ({onChange}) => (
-    <Switch
-        switchHeight="15px"
-        ballHeight="12px"
-        animationDuration="0.25s"
-        checkedColor="#fab132"
-        onChange={onChange}
-        defaultChecked={true}
-    />
-)
-
-interface props {
-    setMode: React.Dispatch<React.SetStateAction<Modes>>
-}
-
-export const SetData: React.FC<props> = ({setMode}) => {    
+export const SetData: React.FC = () => {    
     const {
         originalHeight,
         setOriginalHeight,
@@ -47,41 +28,37 @@ export const SetData: React.FC<props> = ({setMode}) => {
         setAirCS,
         canSatSurfaceArea,
         setCanSatSurfaceArea,
-        setIsPaused
+        setIsPaused,
+        setAppMode,
+        setFlightProperties
     } = useContext(context)
 
-    const handleAutomaticLocalisationChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-        const setLocalisation = async (): Promise<void> => {
-            try {
-                if(e.target.checked) {
-                    const position = await getPosition()
-                    const {latitude, longitude} = position.coords
-                    setOriginalLatitude(latitude)
-                    setOriginalLongitude(longitude)
-                }            
-            }
-            catch(error) {
-                console.error(error)
-            }
+    const setLocalisation = async (): Promise<void> => {
+        try {
+            const position = await getPosition()
+            const {latitude, longitude} = position.coords
+            setOriginalLatitude(latitude)
+            setOriginalLongitude(longitude)                
         }
-        setAutomaticLocalisation(e.target.checked)        
-        setLocalisation()
+        catch(error) {
+            console.error(error)
+        }
     }
+
+    useEffect(() => {setLocalisation()}, [automaticLocalisation])
 
     const handleStart = async (): Promise<void> => {
         try {        
             if(automaticLocalisation) {
-                const position = await getPosition()
-                const {latitude, longitude} = position.coords
-                setOriginalLatitude(latitude)
-                setOriginalLongitude(longitude)
+                await setLocalisation()
             }
             const weather = await getWeather(originalLatitude, originalLongitude)
             automaticWind && setWindSpeed(weather.wind_speed.value)
             automaticWind && setWindAzimuth(weather.wind_direction.value)
             setIsPaused(false)
+            setFlightProperties(ReducerActions.reset)
+            setAppMode(AppModes.WatchData)
             startSimulation()
-            setMode(Modes.WatchData)
         }
         catch(error) {
             console.error(error)
@@ -90,7 +67,7 @@ export const SetData: React.FC<props> = ({setMode}) => {
 
     const data: Array<TableEntry> = [
         {
-            rowName: "Początkowa wysokość",
+            rowName: "Original height",
             value: <input
                 type="number"
                 value={originalHeight}
@@ -99,7 +76,7 @@ export const SetData: React.FC<props> = ({setMode}) => {
             unit: "m"
         },
         {
-            rowName: "Masa satelity",
+            rowName: "CanSat mass",
             value: <input
                 type="number"
                 value={canSatMass}
@@ -109,7 +86,7 @@ export const SetData: React.FC<props> = ({setMode}) => {
             unit: "kg"
         },
         {
-            rowName: "Powierzchnia boczna satelity",
+            rowName: "Satellite side surface",
             value: <input
                 type="number"
                 value={canSatSurfaceArea}
@@ -120,8 +97,12 @@ export const SetData: React.FC<props> = ({setMode}) => {
         },
         {
             rowName: <>
-                Parametr C * S powietrza
-                <a href="https://cnx.org/contents/TqqPA4io@2.43:olSre6jy@4/6-4-Si%C5%82a-oporu-i-pr%C4%99dko%C5%9B%C4%87-graniczna" target="_blank"> ? </a>
+                C * S parameter of air
+                <a
+                    href="https://cnx.org/contents/TqqPA4io@2.43:olSre6jy@4/6-4-Si%C5%82a-oporu-i-pr%C4%99dko%C5%9B%C4%87-graniczna"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                > ? </a>
             </>,
             value: <input
                 type="number"
@@ -131,20 +112,23 @@ export const SetData: React.FC<props> = ({setMode}) => {
             />
         },
         {
-            rowName: "Automatyczna lokalizacja",
-            value: <OrangeSwitch onChange={handleAutomaticLocalisationChange} />,
+            rowName: "Automatic localisation",
+            value: <OrangeSwitch
+                onChange={e => setAutomaticLocalisation(e.target.checked)}
+                checked={automaticLocalisation}
+            />,
         },
         {
-            rowName: "Szerokość geograficzna",
+            rowName: "Latitude",
             value: <input
                 type="number"
                 value={originalLatitude}
-                onChange={e => setOriginalLatitude(parseFloat(e.target.value))}
+                onChange={e => setOriginalLatitude( parseFloat(e.target.value) )}
             />,
             renderCondition: !automaticLocalisation
         },
         {
-            rowName: "Długość geograficzna",
+            rowName: "Longitude",
             value: <input
                 type="number"
                 value={originalLongitude}
@@ -153,11 +137,14 @@ export const SetData: React.FC<props> = ({setMode}) => {
             renderCondition: !automaticLocalisation
         },
         {
-            rowName: "Automatyczny wiatr",
-            value: <OrangeSwitch onChange={e => setAutomaticWind(e.target.checked)} />,
+            rowName: "Automatic wind",
+            value: <OrangeSwitch
+                onChange={e => setAutomaticWind(e.target.checked)}
+                checked={automaticWind}
+            />
         },
         {
-            rowName: "Prędkość wiatru przy ziemii",
+            rowName: "Wind speed",
             value: <input
                 type="number"
                 value={windSpeed}
@@ -167,13 +154,13 @@ export const SetData: React.FC<props> = ({setMode}) => {
             renderCondition: !automaticWind
         },
         {
-            rowName: "Azymut wiatru",
+            rowName: "Wind azimuth",
             value: <input
                 type="number"
                 value={windAzimuth}
                 onChange={e => setWindAzimuth(parseFloat(e.target.value))}
             />,
-            unit: <> &#176; </>,
+            unit: "°",
             renderCondition: !automaticWind
         }        
     ]

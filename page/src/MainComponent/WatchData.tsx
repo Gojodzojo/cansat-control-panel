@@ -1,28 +1,22 @@
 import React, { useContext, useMemo } from "react"
 import { pauseSimulation, resumeSimulation } from ".."
-import { context } from "../App/App"
-import { Modes } from "./MainComponent"
+import { context, ReducerActions } from "../App/App"
+import { AppModes } from "./MainComponent"
 import { Table, TableEntry } from "./Table"
 
-interface props {
-    setMode: React.Dispatch<React.SetStateAction<Modes>>
-}
-
-export const WatchData: React.FC<props> = ({setMode}) => {    
+export const WatchData: React.FC = () => {    
     const {
         isPaused,
-        setCanSatPosition,
-        canSatPosition,
-        originalHeight,
-        velocity,
-        time,
-        setTime,
         windAzimuth,
         windSpeed,
         originalLatitude,
         originalLongitude,
-        pressure
+        flightProperties,
+        setFlightProperties,
+        setAppMode
     } = useContext(context)    
+
+    const {canSatPosition, velocity, pressure, time} = flightProperties.last()
 
     const degPerMeter = useMemo(() => {
         const earthRadius = 6371e3
@@ -30,78 +24,83 @@ export const WatchData: React.FC<props> = ({setMode}) => {
         return 360 / earthCircumference
     }, [])
 
-    const handleCancel = () => {
-        pauseSimulation()
-        setCanSatPosition({x: 0, y: originalHeight, z: 0})
-        setMode(Modes.SetData)
+    const handleCancel = async () => {
+        await pauseSimulation()        
+        setAppMode(AppModes.SetData)
     }
 
-    const currentLongitude = originalLongitude + canSatPosition.last().x * degPerMeter
-    const currentLatitude = originalLatitude + canSatPosition.last().z * degPerMeter    
+    const currentLongitude = originalLongitude + canSatPosition.x * degPerMeter
+    const currentLatitude = originalLatitude + canSatPosition.z * degPerMeter    
 
     const data: Array<TableEntry> = [
         {
-            rowName: "Pozycja x",
-            value: canSatPosition.last().x.toFixed(2)
+            rowName: "Position x",
+            value: canSatPosition.x.toFixed(2)
         },
         {
-            rowName: "Pozycja z",
-            value: canSatPosition.last().z.toFixed(2)
+            rowName: "Position z",
+            value: canSatPosition.z.toFixed(2)
         },
         {
-            rowName: "Długość geograficzna",
+            rowName: "Longitude",
             value: currentLongitude.toFixed(5)
         },
         {
-            rowName: "Szerokość geograficzna",
+            rowName: "Latitude",
             value: currentLatitude.toFixed(5)
         },
         {
-            rowName: "Prędkość spadania",
-            value: (velocity.last().y * -1).toFixed(1),
+            rowName: "Falling velocity",
+            value: (velocity.y * -1).toFixed(1),
             unit: "m/s"
         },
         {
-            rowName: "Wysokość",
-            value: canSatPosition.last().y.toFixed(1),
+            rowName: "Height",
+            value: canSatPosition.y.toFixed(1),
             unit: "m"
         },
         {
-            rowName: "Ciśnienie",
-            value: pressure.last().toFixed(1),
+            rowName: "Pressure",
+            value: pressure.toFixed(1),
             unit: "hPa"
         },
         {
-            rowName: "Prędkość wiatru",
+            rowName: "Wind speed",
             value: windSpeed,
             unit: "m/s"
         },
         {
-            rowName: "Azymut wiatru",
+            rowName: "Wind azimuth",
             value: windAzimuth,
-            unit: <> &#176; </>
+            unit: "°"
         },        
         {
-            rowName: "Czas",
-            value: time.last().toFixed(1),
+            rowName: "Time",
+            value: time.toFixed(1),
             unit: "s"
         },
     ]
 
     return(
         <div className="WatchData">
-            {isPaused?
+            {(canSatPosition.y !== 0) && (isPaused?
                 <button onClick={() => resumeSimulation()} >
-                    Wznów
+                    Resume
                 </button>
                 :
                 <button onClick={() => pauseSimulation()} >
-                    Pauza
+                    Pause
+                </button>   
+            )}
+
+            {(canSatPosition.y === 0 || isPaused) &&
+                <button>
+                    Save
                 </button>
             }
 
             <button onClick={handleCancel} >
-                Anuluj
+                Cancel
             </button>
             <br />
             <Table data={data} />            

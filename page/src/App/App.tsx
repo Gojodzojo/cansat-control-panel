@@ -1,8 +1,9 @@
-import React, { createContext, useEffect, useReducer, useState } from 'react'
+import React, { createContext, useReducer, useState } from 'react'
 import "./App.scss"
 import UnityVisualiser from '../UnityVisualizer/UnityVisualiser'
-import { getPosition, Vector } from '../usefullStuff'
-import MainComponent, { Modes } from '../MainComponent/MainComponent'
+import { Vector } from '../usefullStuff'
+import MainComponent, { AppModes } from '../MainComponent/MainComponent'
+import Graph from '../Graph/Graph'
 
 
 interface ContextType {
@@ -16,10 +17,6 @@ interface ContextType {
   setAutomaticWind: React.Dispatch<React.SetStateAction<boolean>>,
   automaticPressure: boolean,
   setAutomaticPressure: React.Dispatch<React.SetStateAction<boolean>>,
-  canSatPosition: Vector[],
-  setCanSatPosition: React.Dispatch<Vector | ReducerActions>,
-  velocity: Vector[],
-  setVelocity: React.Dispatch<Vector | ReducerActions>,
   originalLongitude: number,
   setOriginalLongitude: React.Dispatch<React.SetStateAction<number>>,
   originalLatitude: number,
@@ -28,57 +25,33 @@ interface ContextType {
   setWindSpeed: React.Dispatch<React.SetStateAction<number>>,
   windAzimuth: number,
   setWindAzimuth: React.Dispatch<React.SetStateAction<number>>,
-  pressure: number[],
-  setPressure: React.Dispatch<number | ReducerActions>,
-  time: number[],
-  setTime: React.Dispatch<number | ReducerActions>,
   canSatMass: number,
   setCanSatMass: React.Dispatch<React.SetStateAction<number>>,
   airCS: number, 
   setAirCS: React.Dispatch<React.SetStateAction<number>>,
   canSatSurfaceArea: number,
-  setCanSatSurfaceArea: React.Dispatch<React.SetStateAction<number>>
+  setCanSatSurfaceArea: React.Dispatch<React.SetStateAction<number>>,
+  flightProperties: FlightProperties[],
+  setFlightProperties: React.Dispatch<FlightProperties | ReducerActions>,
+  appMode: AppModes,
+  setAppMode: React.Dispatch<React.SetStateAction<AppModes>>
 }
 
+export interface FlightProperties {
+  canSatPosition: Vector
+  velocity: Vector,
+  pressure: number,
+  time: number
+}
 
 export enum ReducerActions {
-  clear = "CLEAR"
-}
-
-function isReducerAction(action: any): action is ReducerActions {
-  return action === ReducerActions
+  reset = "RESET"
 }
 
 export const context = createContext<ContextType>(undefined)
 
 export default () => {
-  useEffect(() => {
-    if(!setAutomaticLocalisation) return
-    getPosition()
-      .then(position => {
-        const {latitude, longitude} = position.coords
-        setOriginalLatitude(latitude)
-        setOriginalLongitude(longitude)
-      })
-      .catch(error => console.log(error))
-  }, [])
-
-
-
-  const reducer = function<T>() {    
-    return (state: T[], action: T | ReducerActions) => {
-      if( !isReducerAction(action) ) {
-        return [...state, action]
-      }
-      return []
-    }
-  }
-
-  const [originalHeight, setOriginalHeight] = useState(1000)
-  const [canSatPosition, setCanSatPosition] = useReducer(reducer<Vector>(), [{x: 0, y: originalHeight, z: 0}])
-  const [velocity, setVelocity] = useReducer(reducer<Vector>(), [{x: 0, y: 0, z: 0}])
-  const [pressure, setPressure] = useReducer(reducer<number>(), [0])
-  const [time, setTime] = useReducer(reducer<number>(), [0])  
+  const [originalHeight, setOriginalHeight] = useState(1000)  
   const [isPaused, setIsPaused] = useState(false)
   const [automaticLocalisation, setAutomaticLocalisation] = useState(true)
   const [originalLongitude, setOriginalLongitude] = useState(0)
@@ -90,6 +63,20 @@ export default () => {
   const [canSatMass, setCanSatMass] = useState(0.3)
   const [airCS, setAirCS] = useState(0.3)
   const [canSatSurfaceArea, setCanSatSurfaceArea] = useState(0.00759)
+  const [appMode, setAppMode] = useState(AppModes.SetData)
+
+  const reducer = function<T>() {    
+    return (state: T[], action: T | ReducerActions) => {
+      if( action === ReducerActions.reset ) {
+        return []        
+      }
+      return [...state, action]
+    }
+  }
+
+  const [flightProperties, setFlightProperties] = useReducer(reducer<FlightProperties>(), [])
+
+
   const contextValues: ContextType = {
     isPaused,
     setIsPaused,
@@ -101,10 +88,6 @@ export default () => {
     setAutomaticWind,
     automaticPressure,
     setAutomaticPressure,
-    canSatPosition,
-    setCanSatPosition,
-    velocity,
-    setVelocity,
     originalLongitude,
     setOriginalLongitude,
     originalLatitude,
@@ -113,16 +96,16 @@ export default () => {
     setWindSpeed,
     windAzimuth,
     setWindAzimuth,
-    pressure,
-    setPressure,
-    time,
-    setTime,
     canSatMass,
     setCanSatMass,
     airCS, 
     setAirCS,
     canSatSurfaceArea,
-    setCanSatSurfaceArea
+    setCanSatSurfaceArea,
+    flightProperties,
+    setFlightProperties,
+    appMode,
+    setAppMode
   }
   const anyWindow = window as any
   anyWindow.contextValues = contextValues  
@@ -131,8 +114,8 @@ export default () => {
     <div className="App">      
       <context.Provider value={contextValues}>              
         <UnityVisualiser />
-        
-        <MainComponent />          
+        <Graph />
+        <MainComponent />                
       </context.Provider>      
     </div>
   )

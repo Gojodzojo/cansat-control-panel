@@ -26,6 +26,7 @@ export const Table: React.FC<props> = ({data}) => (
                         </tbody>
                     )
                 }
+                return null
             })
         }
     </table>

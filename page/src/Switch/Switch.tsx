@@ -7,12 +7,13 @@ interface props {
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void,
     animationDuration: string,
     checkedColor: string,
-    defaultChecked?: boolean
+    defaultChecked?: boolean,
+    checked?: boolean
 }
 
 const ID = () => Math.random().toString(36).substr(2, 9)
 
-export const Switch: React.FC<props> = ({switchHeight, ballHeight, onChange, animationDuration, checkedColor, defaultChecked}) => {
+export const Switch = React.forwardRef<HTMLInputElement, props>(({switchHeight, ballHeight, onChange, animationDuration, checkedColor, defaultChecked, checked}, ref) => {
     const switchId = useMemo(() => `Switch-${ID()}`, [])
     return(
         <>
@@ -31,8 +32,10 @@ export const Switch: React.FC<props> = ({switchHeight, ballHeight, onChange, ani
                 type='checkbox'
                 id={switchId}
                 onChange={onChange}
-                defaultChecked={defaultChecked}    
+                defaultChecked={defaultChecked}
+                ref={ref}
+                checked={checked}
             />
         </>
     )
-}
+})

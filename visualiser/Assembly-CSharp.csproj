@@ -401,7 +401,9 @@
      <Compile Include="Assets\Mapbox\Unity\Utilities\VectorEntity.cs" />
      <Compile Include="Assets\Mapbox\Unity\Utilities\VectorExtensions.cs" />
      <Compile Include="Assets\Scenes\CameraController.cs" />
+     <Compile Include="Assets\Scenes\CanSat2dController.cs" />
      <Compile Include="Assets\Scenes\CanSatControler.cs" />
+     <Compile Include="Assets\Scenes\MapController.cs" />
      <None Include="Assets\Mapbox\Examples\2_AstronautGame\AstronautGame\Astronaut\ProjectorLight.shader" />
      <None Include="Assets\Mapbox\Unity\Location\ExampleGpsTraces\LocationProviderAndroidNative.txt" />
      <None Include="Assets\Mapbox\Examples\2_AstronautGame\AstronautGame\Building\CharacterBuildingShader.shader" />

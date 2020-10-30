@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"lorca"
 	"math"
@@ -12,16 +13,21 @@ const (
 	airDensity = 1.225
 )
 
+type FlightProperties struct {
+	CanSatPosition Vector  `json:"canSatPosition"`
+	Velocity       Vector  `json:"velocity"`
+	Pressure       float32 `json:"pressure"`
+	Time           float32 `json:"time"`
+}
+
 var (
 	gravity          Vector
 	windAcceleration Vector
-	position         Vector
-	velocity         Vector
 	canSatMass       float64
 	airCS            float64
-	flightTime       uint
 	active           bool
 	ui               lorca.UI
+	flightProperties FlightProperties
 )
 
 func main() {
@@ -56,12 +62,17 @@ func main() {
 		windAcceleration = windForce
 		windAcceleration.multiplyByScalar(1 / canSatMass)
 
-		originalHeight := float64(jsVar("originalHeight").Float())
-		position = Vector{0, originalHeight, 0}
-		velocity = Vector{0, 0, 0}
+		//jsVar("flightProperties.last()").To(&flightProperties)
+		flightProperties = FlightProperties{}
+		flightProperties.CanSatPosition.Y = float64(jsVar("originalHeight").Float())
+		flightProperties.Pressure = pressureFromHeight()
 
-		jsFunc("setTime", "0")
-		flightTime = 0
+		bytes, err := json.Marshal(flightProperties)
+		if err != nil {
+			panic(err)
+		}
+		jsFunc("setFlightProperties", string(bytes))
+
 		active = true
 	})
 
