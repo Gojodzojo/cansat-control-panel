@@ -1,6 +1,6 @@
 import { Drawer, ListItem, ListItemText } from "@material-ui/core"
 import React, { FC } from "react"
-import { DefaultSimFlightData, DefaultStationFlightData } from "../flightProperties"
+import { DefaultSimMetaData, DefaultStationFlightData } from "../flightProperties"
 import { AppMode, AppModes, useGlobalState } from "../index"
 
 interface props {
@@ -10,7 +10,7 @@ interface props {
 
 export const SideDrawer: FC<props> = ({closeDrawer, isDrawerOpened}) => {
     const [currentAppMode, setCurrentAppMode] = useGlobalState("currentAppMode")
-    const [, setFlightProperties] = useGlobalState("flightProperties")
+    const [, setFlightProperties] = useGlobalState("flightMetaData")
 
     const handleClick = (newMode: AppMode) => {
         if(newMode !== currentAppMode) {
@@ -18,7 +18,7 @@ export const SideDrawer: FC<props> = ({closeDrawer, isDrawerOpened}) => {
                 setFlightProperties(DefaultStationFlightData)
             }
             else {
-                setFlightProperties(DefaultSimFlightData)
+                setFlightProperties(DefaultSimMetaData)
             }
             setCurrentAppMode(newMode)
         }

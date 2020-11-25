@@ -1,8 +1,9 @@
 import "./Graph.scss"
 import React, { useEffect, useRef, useState } from 'react'
 import {XYPlot, XAxis, YAxis, HorizontalGridLines, LineSeries, LineSeriesPoint, VerticalGridLines} from 'react-vis'
-import { getAcceleration, getCanSatPosition, getPressure, getTemperature, getTime, getVelocity, SimFlightData, StationFlightData } from "../flightProperties"
+import { getAcceleration, getCanSatPosition, getPressure, getTemperature, getTime, getVelocity, SimMetaData, StationMetaData } from "../flightProperties"
 import { useGlobalState } from ".."
+import { Paper } from "@material-ui/core"
 
 export const Properties = [
     "Position x",
@@ -22,7 +23,7 @@ export const Properties = [
 export type Property = typeof Properties[number]
 
 export const Graph = () => {
-    const [flightProperties] = useGlobalState("flightProperties")
+    const [flightMetaData] = useGlobalState("flightMetaData")
     const [currentFrameNumber] = useGlobalState("currentFrameNumber")
     const [axisXProperty, setAxisXProperty] = useState<Property>("Time")
     const [axisYProperty, setAxisYProperty] = useState<Property>("Velocity y")
@@ -53,8 +54,8 @@ export const Graph = () => {
         else {        
             for(let i = data.current.length; i <= currentFrameNumber; i++) {
                 data.current.push({
-                    x: pickProperties(flightProperties, axisXProperty, i),
-                    y: pickProperties(flightProperties, axisYProperty, i)
+                    x: pickProperties(flightMetaData, axisXProperty, i),
+                    y: pickProperties(flightMetaData, axisYProperty, i)
                 })
             }
         }
@@ -63,7 +64,7 @@ export const Graph = () => {
 
     const {width, height} = plotSize
     return(
-        <div className="Graph" ref={GraphDiv}>
+        <Paper className="Graph" ref={GraphDiv} color="red">
             <XYPlot width={width} height={height} stroke="#fab132" >
                 <HorizontalGridLines />
                 <VerticalGridLines />
@@ -71,35 +72,35 @@ export const Graph = () => {
                 <XAxis />
                 <YAxis />
             </XYPlot>            
-        </div>
+        </Paper>
     )
 }
 
 
-function pickProperties(data: SimFlightData | StationFlightData, p: Property, i: number): number {
+function pickProperties(data: StationMetaData | SimMetaData, p: Property, i: number): number {
     switch(p) {
         case "Position x":
-            return getCanSatPosition(data, i).x
+            return getCanSatPosition(i).x
         case "Position y":
-            return getCanSatPosition(data, i).y
+            return getCanSatPosition(i).y
         case "Position z":
-            return getCanSatPosition(data, i).z
+            return getCanSatPosition(i).z
         case "Velocity x":
-            return getVelocity(data, i).x
+            return getVelocity(i).x
         case "Velocity y":
-            return getVelocity(data, i).y
+            return getVelocity(i).y
         case "Velocity z":
-            return getVelocity(data, i).z
+            return getVelocity(i).z
         case "Acceleration x":
-            return getAcceleration(data, i).x
+            return getAcceleration(i).x
         case "Acceleration y":
-            return getAcceleration(data, i).y
+            return getAcceleration(i).y
         case "Acceleration z":
-            return getAcceleration(data, i).z
+            return getAcceleration(i).z
         case "Pressure":
-            return getPressure(data, i)
+            return getPressure(i)
         case "Temperature":
-            return getTemperature(data, i)
+            return getTemperature(i)
         case "Time":
             return getTime(data, i)
         default:

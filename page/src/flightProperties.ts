@@ -1,3 +1,4 @@
+import { flightProperties } from "."
 import { Vector } from "./usefullStuff"
 
 const earthRadius = 6371e3
@@ -11,7 +12,7 @@ export interface SimProperties {
     azimuth: number
 }
 
-export interface SimFlightData {
+export interface SimMetaData {
     frameRate: number        
     initialLongitude: number
     initialLatitude: number
@@ -21,10 +22,9 @@ export interface SimFlightData {
     airCS: number
     windSpeed: number
     windAzimuth: number
-    properties: SimProperties[]
 }
 
-export const DefaultSimFlightData: SimFlightData = {
+export const DefaultSimMetaData: SimMetaData = {
     frameRate: 30,
     initialLongitude: 0,
     initialLatitude: 0,
@@ -34,7 +34,6 @@ export const DefaultSimFlightData: SimFlightData = {
     airCS: 1,
     windSpeed: 2,
     windAzimuth: 0,
-    properties: []
 }
 
 export interface StationProperties {
@@ -46,75 +45,70 @@ export interface StationProperties {
     time: number
 }
 
-export interface StationFlightData {
-    date: number
-    properties: StationProperties[]
+export interface StationMetaData {
+    date: number    
 }
 
-export const DefaultStationFlightData: StationFlightData = {
-    date: 0,
-    properties: []
+export const DefaultStationFlightData: StationMetaData = {
+    date: 0
 }
 
-export function getCanSatPosition(data: StationFlightData | SimFlightData, i: number): Vector {
-    if("frameRate" in data) {
-        return data.properties[i].canSatPosition
+export function getCanSatPosition(i: number): Vector {
+    if("canSatPosition" in flightProperties[0]) {
+        return (flightProperties[i] as SimProperties).canSatPosition
     }
     return {x: 0, y: 0, z: 0}
 }
 
-export function getVelocity(data: StationFlightData | SimFlightData, i: number): Vector {
-    if("frameRate" in data) {
-        return data.properties[i].velocity
+export function getVelocity(i: number): Vector {
+    if("canSatPosition" in flightProperties[0]) {
+        return (flightProperties[i] as SimProperties).velocity
     }
     return {x: 0, y: 0, z: 0}
 }
 
-export function getAcceleration(data: StationFlightData | SimFlightData, i: number): Vector {
-    if("frameRate" in data) {
-        return data.properties[i].acceleration
+export function getAcceleration(i: number): Vector {
+    if("canSatPosition" in flightProperties[0]) {
+        return (flightProperties[i] as SimProperties).acceleration
     }
     return {x: 0, y: 0, z: 0}
 }
 
-export function getAzimuth(data: StationFlightData | SimFlightData, i: number): number {
-    if("frameRate" in data) {
-        return data.properties[i].azimuth
-    }
-    return data.properties[i].azimuth
+export function getAzimuth(i: number): number {    
+    return flightProperties[i].azimuth
 }
 
-export function getPressure(data: StationFlightData | SimFlightData, i: number): number {
-    if("frameRate" in data) {
-        return 101325 * Math.pow(1-2.25577 * Math.pow(10, -5) * data.properties[i].canSatPosition.y, 5.25588) / 100
+export function getPressure(i: number): number {
+    if("canSatPosition" in flightProperties[0]) {
+        return 101325 * Math.pow(1-2.25577 * Math.pow(10, -5) * (flightProperties[i] as SimProperties).canSatPosition.y, 5.25588) / 100
     }
-    return data.properties[i].pressure
+    return (flightProperties[i] as StationProperties).pressure
 }
 
-export function getTemperature(data: StationFlightData | SimFlightData, i: number): number {
-    if("frameRate" in data) {
+export function getTemperature(i: number): number {
+    if("canSatPosition" in flightProperties[0]) {
         return 0
     }
-    return data.properties[i].temperature
+    return (flightProperties[i] as StationProperties).temperature
 }
 
-export function getLatitude(data: StationFlightData | SimFlightData, i: number): number {
+export function getLatitude(data: StationMetaData | SimMetaData, i: number): number {
     if("frameRate" in data) {
-        return data.initialLongitude + data.properties[i].canSatPosition.x * degPerMeter
+        return data.initialLongitude + (flightProperties[i] as SimProperties).canSatPosition.x * degPerMeter
     }
-    return data.properties[i].latitude
+    return (flightProperties[i] as StationProperties).latitude
 }
 
-export function getLongitude(data: StationFlightData | SimFlightData, i: number): number {
+export function getLongitude(data: StationMetaData | SimMetaData, i: number): number {
     if("frameRate" in data) {
-        return data.initialLatitude + data.properties[i].canSatPosition.z * degPerMeter
+        return data.initialLatitude + (flightProperties[i] as SimProperties).canSatPosition.z * degPerMeter
     }
-    return data.properties[i].longitude
+    return (flightProperties[i] as StationProperties).longitude
 }
 
-export function getTime(data: StationFlightData | SimFlightData, i: number): number {
+export function getTime(data: StationMetaData | SimMetaData, i: number): number {
     if("frameRate" in data) {
         return i / data.frameRate    
     }
-    return data.properties[i].time
+    return (flightProperties[i] as StationProperties).time
 }

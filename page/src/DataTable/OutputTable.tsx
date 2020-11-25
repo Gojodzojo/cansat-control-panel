@@ -5,7 +5,7 @@ import { getVelocity, getCanSatPosition, getAcceleration, getTime, getLongitude,
 import { TableEntry } from "./DataTable"
 
 export const OutputTable = () => {
-    const [flightProperties] = useGlobalState("flightProperties")
+    const [flightMetaData] = useGlobalState("flightMetaData")
     const [currentFrameNumber] = useGlobalState("currentFrameNumber")
 
     let data: TableEntry[] = []
@@ -13,39 +13,39 @@ export const OutputTable = () => {
         data = []
     }
     else {
-        const position = getCanSatPosition(flightProperties, currentFrameNumber)
-        const velocity = getVelocity(flightProperties, currentFrameNumber)
-        const acceleration = getAcceleration(flightProperties, currentFrameNumber)        
+        const position = getCanSatPosition(currentFrameNumber)
+        const velocity = getVelocity(currentFrameNumber)
+        const acceleration = getAcceleration(currentFrameNumber)        
 
         data = [
             {
                 rowName: "Time",
-                value: getTime(flightProperties, currentFrameNumber).toFixed(1),
+                value: getTime(flightMetaData, currentFrameNumber).toFixed(1),
                 unit: "s"
             },            
             {
                 rowName: "Longitude",
-                value: getLongitude(flightProperties, currentFrameNumber).toFixed(5),
+                value: getLongitude(flightMetaData, currentFrameNumber).toFixed(5),
                 unit: "°"
             },
             {
                 rowName: "Latitude",
-                value: getLatitude(flightProperties, currentFrameNumber).toFixed(5),
+                value: getLatitude(flightMetaData, currentFrameNumber).toFixed(5),
                 unit: "°"
             },
             {
                 rowName: "Azimuth",
-                value: getAzimuth(flightProperties, currentFrameNumber),
+                value: getAzimuth(currentFrameNumber),
                 unit: "°"
             },
             {
                 rowName: "Temperature",
-                value: getTemperature(flightProperties, currentFrameNumber).toFixed(1),
+                value: getTemperature(currentFrameNumber).toFixed(1),
                 unit: "°C"
             },
             {
                 rowName: "Pressure",
-                value: getPressure(flightProperties, currentFrameNumber).toFixed(1),
+                value: getPressure(currentFrameNumber).toFixed(1),
                 unit: "hPa"
             },
             {

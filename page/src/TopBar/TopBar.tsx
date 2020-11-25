@@ -11,14 +11,14 @@ interface props {
 
 export const TopBar: FC<props> = ({openDrawer}) => {
     const [isRunning, setIsRunning] = useGlobalState("isRunning")
-    const [flightProperties] = useGlobalState("flightProperties")
+    const [flightMetaData] = useGlobalState("flightMetaData")
     const [currentAppMode] = useGlobalState("currentAppMode")
     
     const doMagic = () => {
-        if("date" in flightProperties && currentAppMode === "Station") {            
+        if("date" in flightMetaData && currentAppMode === "Station") {            
             //watchForData()
         }
-        else if("frameRate" in flightProperties && currentAppMode === "Simulator") {
+        else if("frameRate" in flightMetaData && currentAppMode === "Simulator") {
             simulate()
         }                
     }

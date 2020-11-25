@@ -1,18 +1,16 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { App } from './App/App'
-import { DefaultSimFlightData, SimFlightData, StationFlightData } from './flightProperties'
+import { SimMetaData, StationMetaData, SimProperties, StationProperties, DefaultSimMetaData } from './flightProperties'
 import { createGlobalState } from 'react-hooks-global-state'
 import { ExportFields } from 'react-hooks-global-state/dist/src/createGlobalState'
 
 export const AppModes = ["Simulator", "Station", "Player"] as const
 export type AppMode = typeof AppModes[number]
 
-
-
 interface GlobalStateProperties {
   currentAppMode: AppMode
-  flightProperties: SimFlightData | StationFlightData
+  flightMetaData: SimMetaData | StationMetaData
   isRunning: boolean
   currentFrameNumber: number | undefined
   isPaused: boolean
@@ -31,25 +29,29 @@ interface GlobalState {
 declare global {
   interface Window {
     globalState: Pick<GlobalState, ExportFields>
+    flightProperties: SimProperties[] | StationProperties[]
   }
 }
 
 if(window.opener === null) {
   window.globalState = createGlobalState<GlobalStateProperties>({
     currentAppMode: "Simulator",
-    flightProperties: DefaultSimFlightData,
     isRunning: false,
     currentFrameNumber: undefined,
-    isPaused: false
+    isPaused: false,
+    flightMetaData: DefaultSimMetaData
   })
+  window.flightProperties = []
   //window.open("./", "_blank")
 }
 else {
-  const {globalState} = (window.opener as Window)
+  const {globalState, flightProperties} = (window.opener as Window)
   window.globalState = globalState
+  window.flightProperties = flightProperties
 } 
 
 export const {getGlobalState, setGlobalState, useGlobalState, useGlobalStateProvider} = window.globalState
+export const {flightProperties} = window
 
 ReactDOM.render(
   <React.StrictMode> <App /> </React.StrictMode>,

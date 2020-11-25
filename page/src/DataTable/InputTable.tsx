@@ -1,28 +1,28 @@
-import { Switch, TableBody, TableCell, TableRow } from "@material-ui/core"
+import { Switch, TableBody, TableCell, TableRow, TextField } from "@material-ui/core"
 import React, { useEffect, useState } from "react"
 import { useGlobalState } from ".."
-import { SimFlightData } from "../flightProperties"
+import { SimMetaData } from "../flightProperties"
 import { getPosition, getWeather } from "../usefullStuff"
 import { TableEntry } from "./DataTable"
 
 export const InputTable = () => {    
-    const [flightProperties, setFlightProperties] = useGlobalState("flightProperties")
+    const [flightMetaData, setFlightMetaData] = useGlobalState("flightMetaData")
     const [,setCurrentAppMode] = useGlobalState("currentAppMode")
     const [automaticLocalisation, setAutomaticLocalisation] = useState(true)    
     const [automaticWeather, setAutomaticWeather] = useState(true)
 
-    if("date" in flightProperties) {
+    if("date" in flightMetaData) {
         setCurrentAppMode("Station")
     }
 
-    const { frameRate, initialLatitude, initialLongitude, initialHeight, canSatMass, canSatSurfaceArea, airCS, windAzimuth, windSpeed } = flightProperties as SimFlightData    
+    const { frameRate, initialLatitude, initialLongitude, initialHeight, canSatMass, canSatSurfaceArea, airCS, windAzimuth, windSpeed } = flightMetaData as SimMetaData  
 
     useEffect(() => {
         (async () => {
             const {latitude, longitude} = (await getPosition()).coords
             const resp = await getWeather(latitude, longitude)
-            setFlightProperties({
-                ...flightProperties,
+            setFlightMetaData({
+                ...flightMetaData,
                 initialLatitude: latitude,
                 initialLongitude: longitude,
                 ...resp
@@ -36,7 +36,7 @@ export const InputTable = () => {
             if(automaticWeather) {
                 const resp = await getWeather(initialLatitude, initialLongitude)
                 if(resp !== null) {
-                    setFlightProperties({...flightProperties, ...resp})
+                    setFlightMetaData({...flightMetaData, ...resp})
                 }
             }
         })()
@@ -45,38 +45,40 @@ export const InputTable = () => {
     const data: TableEntry[] = [
         {
             rowName: "Frame rate",
-            value: <input
+            value: <TextField
                 type="number"
                 value={frameRate}
-                onChange={e => setFlightProperties({...flightProperties, frameRate: parseFloat(e.target.value)})}
+                onChange={e => setFlightMetaData({...flightMetaData, frameRate: parseFloat(e.target.value)})}
+                label="Frame rate"
             />
         },
         {
             rowName: "Initial height",
-            value: <input
+            value: <TextField
                 type="number"
                 value={initialHeight}
-                onChange={e => setFlightProperties({...flightProperties, initialHeight: parseFloat(e.target.value)})}
+                onChange={e => setFlightMetaData({...flightMetaData, initialHeight: parseFloat(e.target.value)})}
+                label="Initial height"
             />,
             unit: "m"
         },
         {
             rowName: "CanSat mass",
-            value: <input
+            value: <TextField
                 type="number"
                 value={canSatMass}
-                onChange={e => setFlightProperties({...flightProperties, canSatMass: parseFloat(e.target.value)})}
-                step="0.01"
+                onChange={e => setFlightMetaData({...flightMetaData, canSatMass: parseFloat(e.target.value)})}
+                label="CanSat mass"
             />,
             unit: "kg"
         },
         {
             rowName: "Satellite side surface",
-            value: <input
+            value: <TextField
                 type="number"
                 value={canSatSurfaceArea}
-                onChange={e => setFlightProperties({...flightProperties, canSatSurfaceArea: parseFloat(e.target.value)})}
-                step="0.01"
+                onChange={e => setFlightMetaData({...flightMetaData, canSatSurfaceArea: parseFloat(e.target.value)})}
+                label="Satellite side surface"
             />,
             unit: <>m<sup>2</sup></>
         },
@@ -89,11 +91,11 @@ export const InputTable = () => {
                     rel="noopener noreferrer"
                 > ? </a>
             </>,
-            value: <input
+            value: <TextField
                 type="number"
                 value={airCS}
-                onChange={e => setFlightProperties({...flightProperties, airCS: parseFloat(e.target.value)})}
-                step="0.01"
+                onChange={e => setFlightMetaData({...flightMetaData, airCS: parseFloat(e.target.value)})}
+                label="C * S parameter of air"
             />
         },
         {
@@ -105,20 +107,22 @@ export const InputTable = () => {
         },
         {
             rowName: "Latitude",
-            value: <input
+            value: <TextField
                 type="number"
                 value={initialLatitude}
-                onChange={e => setFlightProperties({...flightProperties, initialLatitude: parseFloat(e.target.value)})}
+                onChange={e => setFlightMetaData({...flightMetaData, initialLatitude: parseFloat(e.target.value)})}
                 disabled={automaticLocalisation}
+                label="Latitude"
             />
         },
         {
             rowName: "Longitude",
-            value: <input
+            value: <TextField
                 type="number"
                 value={initialLongitude}
-                onChange={e => setFlightProperties({...flightProperties, initialLongitude: parseFloat(e.target.value)})}
+                onChange={e => setFlightMetaData({...flightMetaData, initialLongitude: parseFloat(e.target.value)})}
                 disabled={automaticLocalisation}
+                label="Longitude"
             />
         },
         {
@@ -130,21 +134,23 @@ export const InputTable = () => {
         },
         {
             rowName: "Wind speed",
-            value: <input
+            value: <TextField
                 type="number"
                 value={windSpeed}
-                onChange={e => setFlightProperties({...flightProperties, windSpeed: parseFloat(e.target.value)})}
+                onChange={e => setFlightMetaData({...flightMetaData, windSpeed: parseFloat(e.target.value)})}
                 disabled={automaticWeather}
+                label="Wind speed"
             />,
             unit: "m/s",
         },
         {
             rowName: "Wind azimuth",
-            value: <input
+            value: <TextField
                 type="number"
                 value={windAzimuth}
-                onChange={e => setFlightProperties({...flightProperties, windAzimuth: parseFloat(e.target.value)})}
+                onChange={e => setFlightMetaData({...flightMetaData, windAzimuth: parseFloat(e.target.value)})}
                 disabled={automaticWeather}
+                label="Wind azimuth"
             />,
             unit: "°"
         }              

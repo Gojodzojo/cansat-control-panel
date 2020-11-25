@@ -1,5 +1,5 @@
-import { getGlobalState, setGlobalState } from "."
-import { SimFlightData, SimProperties } from "./flightProperties"
+import { flightProperties, getGlobalState, setGlobalState } from "."
+import { SimMetaData, SimProperties, StationProperties } from "./flightProperties"
 import { doPhysics, setVariables } from "./wasmImport"
 
 function delay(ms: number) {
@@ -7,30 +7,21 @@ function delay(ms: number) {
 }
 
 export const simulate = async () => {    
-    const {canSatMass, airCS, windSpeed, windAzimuth, canSatSurfaceArea, initialHeight, frameRate} = getGlobalState("flightProperties") as SimFlightData
+    const {canSatMass, airCS, windSpeed, windAzimuth, canSatSurfaceArea, initialHeight, frameRate} = getGlobalState("flightMetaData") as SimMetaData
     setVariables(canSatMass, airCS, windSpeed, windAzimuth, canSatSurfaceArea, initialHeight, frameRate)
     setGlobalState("currentFrameNumber", -1)    
 
     while(getGlobalState("isRunning")) {
         while(getGlobalState("isPaused")){}
         const frameStart = performance.now()  
-        const result = doPhysics() as SimProperties
-        const flightProperties = getGlobalState("flightProperties") as SimFlightData
-        setGlobalState("flightProperties", {
-            ...flightProperties,
-            properties: [...flightProperties.properties, result]
-        })
-        setGlobalState("currentFrameNumber", 1 + (getGlobalState("currentFrameNumber") as number))        
+        const result = doPhysics() as SimProperties & StationProperties        
+        flightProperties.push(result)     
+        setGlobalState("currentFrameNumber", flightProperties.length - 1)        
         await delay((1/frameRate) - (performance.now() - frameStart))
     }
     
     setGlobalState("currentFrameNumber", undefined)
-    const flightProperties = getGlobalState("flightProperties") as SimFlightData
-    const properties: SimProperties[] = []
-    setGlobalState("flightProperties", {
-        ...flightProperties,
-        properties
-    })
+    window.flightProperties = []
 }
 
 // export const simulate = () => {            

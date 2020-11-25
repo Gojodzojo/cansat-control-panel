@@ -27,10 +27,10 @@ export const UnityVisualiser = () => {
     const [isFullscreen, setIsFullscreen] = useState(false)
     
     const [isMarkEnabled, setIsMarkEnabled] = useState(true)        
-    const canSatPosition = flightProperties.last() === undefined? 
+    const canSatPosition = flightMetaData.last() === undefined? 
         {x: 0, y: 0, z: 0}
         :
-        flightProperties.last().canSatPosition    
+        flightMetaData.last().canSatPosition    
 
     
     
@@ -72,7 +72,7 @@ export const UnityVisualiser = () => {
         return () => document.removeEventListener("fullscreenchange", handleFullscreenChange)
     })*/
 
-    const [flightProperties] = useGlobalState("flightProperties")
+    const [flightMetaData] = useGlobalState("flightMetaData")
     const [currentAppMode] = useGlobalState("currentAppMode")
     const [currentFrameNumber] = useGlobalState("currentFrameNumber")
     const [isRunning] = useGlobalState("isRunning")
@@ -89,17 +89,17 @@ export const UnityVisualiser = () => {
 
     useEffect(() => {
         if(isUnityLoaded) {
-            if(currentAppMode === "Simulator" && "frameRate" in flightProperties && !isRunning) {
-                const { initialHeight, initialLatitude, initialLongitude } = flightProperties
+            if(currentAppMode === "Simulator" && "frameRate" in flightMetaData && !isRunning) {
+                const { initialHeight, initialLatitude, initialLongitude } = flightMetaData
                 setOriginalHeightUnity(initialHeight)
                 setCoordinates({x: initialLatitude, y: initialLongitude})
                 moveCanSat({x: 0, y: initialHeight, z: 0})
             }
             else if(currentFrameNumber !== undefined && currentFrameNumber > 0) {
-                moveCanSat(getCanSatPosition(flightProperties, currentFrameNumber))
+                moveCanSat(getCanSatPosition(currentFrameNumber))
             }
         }
-    }, [flightProperties, currentAppMode, currentFrameNumber, isUnityLoaded])
+    }, [flightMetaData, currentAppMode, currentFrameNumber, isUnityLoaded])
         
     return(
         <Unity unityContent={unityContent} />
