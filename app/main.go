@@ -14,10 +14,8 @@ const (
 )
 
 type FlightProperties struct {
-	CanSatPosition Vector  `json:"canSatPosition"`
-	Velocity       Vector  `json:"velocity"`
-	Pressure       float32 `json:"pressure"`
-	Time           float32 `json:"time"`
+	CanSatPosition Vector `json:"canSatPosition"`
+	Velocity       Vector `json:"velocity"`
 }
 
 var (
@@ -40,14 +38,13 @@ func main() {
 	}
 
 	ui, _ = lorca.New(addr, "./user-data-dir", 1000, 1000)
-	go simulationLoop()
 
 	ui.Bind("startSimulation", func() {
-		canSatMass = float64(jsVar("canSatMass").Float())
-		airCS = float64(jsVar("airCS").Float())
+		canSatMass = 1
+		airCS = 2
 
-		windSpeed := jsVar("windSpeed").Float()
-		windAzimuth := jsVar("windAzimuth").Float()
+		windSpeed := float32(3)
+		windAzimuth := float32(4)
 
 		rad := deg2rad(float64(windAzimuth))
 		windForce := Vector{math.Cos(rad) * -1, 0, math.Sin(rad) * -1}
@@ -56,7 +53,7 @@ func main() {
 		}
 
 		/* https://www.engineeringtoolbox.com/wind-load-d_1775.html */
-		canSatSurfaceArea := jsVar("canSatSurfaceArea").Float()
+		canSatSurfaceArea := float32(5)
 		windForceVal := 0.5 * canSatSurfaceArea * airDensity * float32(math.Pow(float64(windSpeed), 2))
 		windForce.multiplyByScalar(float64(windForceVal))
 		windAcceleration = windForce
@@ -64,8 +61,7 @@ func main() {
 
 		//jsVar("flightProperties.last()").To(&flightProperties)
 		flightProperties = FlightProperties{}
-		flightProperties.CanSatPosition.Y = float64(jsVar("originalHeight").Float())
-		flightProperties.Pressure = pressureFromHeight()
+		flightProperties.CanSatPosition.Y = 6
 
 		bytes, err := json.Marshal(flightProperties)
 		if err != nil {
@@ -74,6 +70,24 @@ func main() {
 		jsFunc("setFlightProperties", string(bytes))
 
 		active = true
+	})
+
+	ui.Bind("doGoPhysics", func() {
+		flightProperties.Velocity.add(&gravity)
+		flightProperties.Velocity.add(&windAcceleration)
+
+		/* https://cnx.org/contents/TqqPA4io@2.43:olSre6jy@4/6-4-Si%C5%82a-oporu-i-pr%C4%99dko%C5%9B%C4%87-graniczna */
+		dragForceVal := 0.5 * airDensity * airCS * math.Pow(flightProperties.Velocity.Y, 2)
+		dragForce := Vector{0, dragForceVal, 0}
+		flightProperties.Velocity.add(&dragForce)
+
+		flightProperties.CanSatPosition.add(&flightProperties.Velocity)
+
+		bytes, err := json.Marshal(flightProperties)
+		if err != nil {
+			panic(err)
+		}
+		ui.Eval("setFlightProperties(" + string(bytes) + ")")
 	})
 
 	ui.Bind("pauseSimulation", func() {

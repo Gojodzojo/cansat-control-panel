@@ -2,9 +2,8 @@ import "./Settings.scss"
 import React, { useState } from "react"
 import { CameraModes } from "./UnityVisualiser"
 import { SettingsButton } from "./SettingsButton"
-import { OrangeSwitch } from "../Switch/OrangeSwitch"
 
-interface props {
+/*interface props {
     setMode: (parameter: CameraModes) => void,
     setIsMarkEnabled: React.Dispatch<React.SetStateAction<boolean>>,
     isMarkEnabled: boolean,    
@@ -44,4 +43,4 @@ export const Settings: React.FC<props> = ({setMode, setIsMarkEnabled, isMarkEnab
             )}
         </div>
     )
-}
+}*/

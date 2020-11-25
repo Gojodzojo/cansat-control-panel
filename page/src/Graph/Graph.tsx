@@ -1,65 +1,37 @@
 import "./Graph.scss"
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {XYPlot, XAxis, YAxis, HorizontalGridLines, LineSeries, LineSeriesPoint, VerticalGridLines} from 'react-vis'
-import { context, FlightProperties } from '../App/App'
+import { getAcceleration, getCanSatPosition, getPressure, getTemperature, getTime, getVelocity, SimFlightData, StationFlightData } from "../flightProperties"
+import { useGlobalState } from ".."
 
-enum Properties {
-    canSatPositionX = "Position x",
-    canSatPositionY = "Position y",
-    canSatPositionZ = "Position z",
-    velocityX = "Velocity x",
-    velocityY = "Velocity y",
-    velocityZ = "Velocity z",
-    pressure = "Preassure",
-    time = "Time"
-}
+export const Properties = [
+    "Position x",
+    "Position y",
+    "Position z",
+    "Velocity x",
+    "Velocity y",
+    "Velocity z",
+    "Acceleration x",
+    "Acceleration y",
+    "Acceleration z",
+    "Pressure",
+    "Temperature",
+    "Time"
+] as const
 
-const pickProperties = (ch: FlightProperties, p: Properties): number => {
-    switch(p) {
-        case Properties.canSatPositionX:
-            return ch.canSatPosition.x
-        case Properties.canSatPositionY:
-            return ch.canSatPosition.y
-        case Properties.canSatPositionZ:
-            return ch.canSatPosition.z
-        case Properties.velocityX:
-            return ch.velocity.x
-        case Properties.velocityY:
-            return ch.velocity.y * -1
-        case Properties.velocityZ:
-            return ch.velocity.z
-        case Properties.pressure:
-            return ch.pressure
-        case Properties.time:
-            return ch.time
-        default:
-            return 0
-    }        
-}
+export type Property = typeof Properties[number]
 
-interface SelectProps {
-    onChange: React.Dispatch<React.SetStateAction<Properties>>,
-    value: Properties
-}
-
-const SelectProperty:React.FC<SelectProps> = ({onChange, value}) => (
-    <select onChange={e => onChange(e.target.value as Properties)} value={value}>
-    {
-        Object.keys(Properties).map((propName, index) => {
-            const propVal: string = Properties[propName]
-            return <option key={index} value={propVal}> {propVal} </option>
-        })
-    }
-    </select>
-)
-
-export default () => {
-    const {flightProperties} = useContext(context)
+export const Graph = () => {
+    const [flightProperties] = useGlobalState("flightProperties")
+    const [currentFrameNumber] = useGlobalState("currentFrameNumber")
+    const [axisXProperty, setAxisXProperty] = useState<Property>("Time")
+    const [axisYProperty, setAxisYProperty] = useState<Property>("Velocity y")
     const [plotSize, setPlotSize] = useState({width: 0, height: 0})
-    const GraphDiv = useRef<HTMLDivElement>()
-
+    const GraphDiv = useRef<HTMLDivElement | null>(null)
+    const data = useRef<LineSeriesPoint[]>([])
+    
     const resizeGraph = () => {
-        if(GraphDiv.current === undefined) return
+        if(GraphDiv.current === null) return
         const {width, height} = GraphDiv.current.getBoundingClientRect()
         setPlotSize({width, height})
     }
@@ -70,18 +42,24 @@ export default () => {
         return () => window.removeEventListener("resize", resizeGraph)
     }, [])
 
-    const [axisXProperty, setAxisXProperty] = useState(Properties.time)
-    const [axisYProperty, setAxisYProperty] = useState(Properties.velocityY)
+    useEffect(() => {
+        data.current = []
+    }, [axisXProperty, axisYProperty])
 
-    const data: LineSeriesPoint[] = flightProperties.length === 0? 
-        [{x: 0, y: 0}]
-        :
-        flightProperties.map((chunk) => {
-        return {
-            x: pickProperties(chunk, axisXProperty),
-            y: pickProperties(chunk, axisYProperty),
+    useEffect(() => {
+        if(currentFrameNumber === undefined || currentFrameNumber === -1) {
+            data.current = [{x: 0, y: 0}]
         }
-    })
+        else {        
+            for(let i = data.current.length; i <= currentFrameNumber; i++) {
+                data.current.push({
+                    x: pickProperties(flightProperties, axisXProperty, i),
+                    y: pickProperties(flightProperties, axisYProperty, i)
+                })
+            }
+        }
+    }, [currentFrameNumber])
+    
 
     const {width, height} = plotSize
     return(
@@ -89,15 +67,42 @@ export default () => {
             <XYPlot width={width} height={height} stroke="#fab132" >
                 <HorizontalGridLines />
                 <VerticalGridLines />
-                <LineSeries data={data} />
+                <LineSeries data={data.current} />
                 <XAxis />
                 <YAxis />
-            </XYPlot>
-            Axis x:
-            <SelectProperty value={axisXProperty} onChange={setAxisXProperty} />
-            <br />
-            Axis y:            
-            <SelectProperty value={axisYProperty} onChange={setAxisYProperty} />
+            </XYPlot>            
         </div>
     )
+}
+
+
+function pickProperties(data: SimFlightData | StationFlightData, p: Property, i: number): number {
+    switch(p) {
+        case "Position x":
+            return getCanSatPosition(data, i).x
+        case "Position y":
+            return getCanSatPosition(data, i).y
+        case "Position z":
+            return getCanSatPosition(data, i).z
+        case "Velocity x":
+            return getVelocity(data, i).x
+        case "Velocity y":
+            return getVelocity(data, i).y
+        case "Velocity z":
+            return getVelocity(data, i).z
+        case "Acceleration x":
+            return getAcceleration(data, i).x
+        case "Acceleration y":
+            return getAcceleration(data, i).y
+        case "Acceleration z":
+            return getAcceleration(data, i).z
+        case "Pressure":
+            return getPressure(data, i)
+        case "Temperature":
+            return getTemperature(data, i)
+        case "Time":
+            return getTime(data, i)
+        default:
+            return 0
+    }        
 }

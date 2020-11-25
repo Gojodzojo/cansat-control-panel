@@ -1,9 +1,23 @@
-body{
+body {
     margin: 0;
-    background-color: #2d2c2c;
+    background-color: #56657F; 
     overflow: hidden;
 }
 
 .App {     
     color: white;
+    height: 100vh;
+    
+    .utility {
+        display: inline-block;
+        width: calc(50% - 20px) !important;
+        height: calc(50% - 32px - 20px);
+        margin: 10px;
+        
+        overflow-y: scroll;
+
+        &::-webkit-scrollbar {
+            width: 0px;
+        }
+    }   
 }

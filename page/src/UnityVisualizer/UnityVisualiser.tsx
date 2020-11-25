@@ -1,10 +1,9 @@
 import "./UnityVisualizer.scss"
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react"
 import Unity, { UnityContent } from "react-unity-webgl"
-import { context } from "../App/App"
 import { Vector } from "../usefullStuff"
-import { Settings } from "./Settings"
-import { AppModes } from "../MainComponent/MainComponent"
+import { getCanSatPosition } from "../flightProperties"
+import { useGlobalState } from ".."
 
 export enum CameraModes {
     Orbit,
@@ -23,32 +22,17 @@ function cerateUnityFunction <paramType> (unityContent: UnityContent, gameObject
     }
 }
 
-export default () => {
-    const {
-        originalHeight,
-        flightProperties,
-        originalLatitude,
-        originalLongitude,
-        appMode
-    } = useContext(context)
-
-    const UnityVisualiserRef = useRef<HTMLDivElement>()
+export const UnityVisualiser = () => {    
+    /*const UnityVisualiserRef = useRef<HTMLDivElement>(null)
     const [isFullscreen, setIsFullscreen] = useState(false)
-    const [isUnityLoaded, setIsUnityLoaded] = useState(false)
-    const [isMarkEnabled, setIsMarkEnabled] = useState(true)    
-    const unityContent = useMemo(() => new UnityContent("unity/Build/unity.json", "unity/Build/UnityLoader.js"), [])
+    
+    const [isMarkEnabled, setIsMarkEnabled] = useState(true)        
     const canSatPosition = flightProperties.last() === undefined? 
         {x: 0, y: 0, z: 0}
         :
-        flightProperties.last().canSatPosition
-    
-    unityContent.on("loaded", () => setIsUnityLoaded(true))
+        flightProperties.last().canSatPosition    
 
-    const setMode = useCallback( cerateUnityFunction <CameraModes> (unityContent, "Main Camera", "setMode"), [unityContent] )    
-    const setOriginalHeightUnity = useCallback( cerateUnityFunction <number> (unityContent, "Main Camera", "setOriginalHeight"), [unityContent] )
-    const moveCanSat = useCallback( cerateUnityFunction <Vector> (unityContent, "CanSat", "moveCanSat", true), [unityContent] )
-    const setMarkEnabled = useCallback( cerateUnityFunction <boolean> (unityContent, "CanSat2d", "setMarkEnabled", true), [unityContent] )
-    const setCoordinates = useCallback( cerateUnityFunction <Coordinates> (unityContent, "Map", "setCoordinates", true), [unityContent] )
+    
     
     useEffect(() => setOriginalHeightUnity(originalHeight + 1), [originalHeight, isUnityLoaded])        
     useEffect(() => setMarkEnabled(isMarkEnabled), [isMarkEnabled, isUnityLoaded])
@@ -67,7 +51,7 @@ export default () => {
     }, [originalHeight, isUnityLoaded])
 
     useEffect(() => {
-        if(UnityVisualiserRef === undefined) return
+        if(UnityVisualiserRef.current === null) return
         if(isFullscreen) {
             UnityVisualiserRef.current.requestFullscreen().catch(err => console.log(err))
         }
@@ -86,19 +70,39 @@ export default () => {
 
         document.addEventListener("fullscreenchange", handleFullscreenChange)
         return () => document.removeEventListener("fullscreenchange", handleFullscreenChange)
-    })
-            
+    })*/
 
+    const [flightProperties] = useGlobalState("flightProperties")
+    const [currentAppMode] = useGlobalState("currentAppMode")
+    const [currentFrameNumber] = useGlobalState("currentFrameNumber")
+    const [isRunning] = useGlobalState("isRunning")
+
+    const unityContent = useMemo(() => new UnityContent("unity/Build/unity.json", "unity/Build/UnityLoader.js"), [])
+    const [isUnityLoaded, setIsUnityLoaded] = useState(false)
+    unityContent.on("loaded", () => setIsUnityLoaded(true))
+
+    const setMode = useCallback( cerateUnityFunction <CameraModes> (unityContent, "Main Camera", "setMode"), [unityContent] )    
+    const setOriginalHeightUnity = useCallback( cerateUnityFunction <number> (unityContent, "Main Camera", "setOriginalHeight"), [unityContent] )
+    const moveCanSat = useCallback( cerateUnityFunction <Vector> (unityContent, "CanSat", "moveCanSat", true), [unityContent] )
+    const setMarkEnabled = useCallback( cerateUnityFunction <boolean> (unityContent, "CanSat2d", "setMarkEnabled", true), [unityContent] )
+    const setCoordinates = useCallback( cerateUnityFunction <Coordinates> (unityContent, "Map", "setCoordinates", true), [unityContent] )
+
+    useEffect(() => {
+        if(isUnityLoaded) {
+            if(currentAppMode === "Simulator" && "frameRate" in flightProperties && !isRunning) {
+                const { initialHeight, initialLatitude, initialLongitude } = flightProperties
+                setOriginalHeightUnity(initialHeight)
+                setCoordinates({x: initialLatitude, y: initialLongitude})
+                moveCanSat({x: 0, y: initialHeight, z: 0})
+            }
+            else if(currentFrameNumber !== undefined && currentFrameNumber > 0) {
+                moveCanSat(getCanSatPosition(flightProperties, currentFrameNumber))
+            }
+        }
+    }, [flightProperties, currentAppMode, currentFrameNumber, isUnityLoaded])
+        
     return(
-        <div className="UnityVisualiser" ref={UnityVisualiserRef}>                                    
-            <Settings
-                setMode={setMode}
-                setIsMarkEnabled={setIsMarkEnabled}
-                isMarkEnabled={isMarkEnabled}
-                isFullscreen={isFullscreen}
-                setIsFullscreen={setIsFullscreen}
-            />
-            <Unity unityContent={unityContent} className="viewport"/>
-        </div>
+        <Unity unityContent={unityContent} />
     )
+    
 }
