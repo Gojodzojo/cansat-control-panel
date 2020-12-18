@@ -1,0 +1,35 @@
+.UtilityWindow {
+    display: inline-block;    
+    margin: 10px;
+    background-color: #212936 !important;
+    
+    overflow-y: scroll;
+
+    &::-webkit-scrollbar {
+        width: 0px;
+    }
+
+    .UtilitySettingsButton {    
+        position: absolute !important;
+        transform-origin: center;        
+        z-index: 10;
+    }
+
+    &.big {
+        width: calc(100vw - 20px) !important;
+        height: calc(100vh - 20px - var(--topBar-height));
+
+        .UtilitySettingsButton {    
+            transform: translate(calc(100vw - 55px), 5px);
+        }
+    }
+
+    &.small {
+        width: calc(50vw - 20px) !important;
+        height: calc(50vh - 20px - ( var(--topBar-height) / 2 )); 
+
+        .UtilitySettingsButton {    
+            transform: translate(calc(50vw - 55px), 5px);
+        }
+    }    
+}

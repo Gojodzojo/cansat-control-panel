@@ -1,10 +1,42 @@
 .Graph {
-    width: 100%;
-    height: 100%;
-    background-color: black;    
+    .axisName {
+        position: absolute;
+        display: block;
+        color: white;
 
-    .rv-xy-plot{
-        fill: transparent;
-        stroke: black;
+        &.Y {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: translateY(calc((50vh - 20px - ( var(--topBar-height) / 2 )) / 2));
+        }
+
+        &.X {
+            transform-origin: center;
+            transform: translate( calc(25vw - 10px), calc(50vh - 20px - ( var(--topBar-height) / 2) - 100%) );
+        }
     }
+
+    div {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;                
+
+        .rv-xy-plot {
+            fill: transparent;
+            stroke: #313C4E;
+            stroke-width: 2px;
+            
+
+            path {
+                stroke: #2196F3 !important;
+                stroke-width: 3px;
+            }
+
+            svg {
+                overflow: visible;
+            }
+        }
+    }    
 }

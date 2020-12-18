@@ -1,18 +1,17 @@
 .TopBar {
     background-color: #212936 !important;
 
-    .runButton {
-        margin-left: auto;
-        margin-right: 0;
+    .menuButton {
+        margin-left: 0;
+        margin-right: auto;
+    }
+
+    .runButton {        
         background-color: #2196F3;
         color: white;
 
         &:hover {
             background-color: #42A5F5;
         }
-    }
-
-    .menuIcon {        
-        fill: #56657F;
-    }
+    }    
 }

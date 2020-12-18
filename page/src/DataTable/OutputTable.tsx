@@ -1,51 +1,51 @@
 import { TableBody, TableCell, TableRow } from "@material-ui/core"
 import React from "react"
-import { useGlobalState } from ".."
-import { getVelocity, getCanSatPosition, getAcceleration, getTime, getLongitude, getLatitude, getAzimuth, getTemperature, getPressure } from "../flightProperties"
+import { currentFrameNumberState, flightDataState } from ".."
+import { useGlobalState } from "../globalState"
 import { TableEntry } from "./DataTable"
 
 export const OutputTable = () => {
-    const [flightMetaData] = useGlobalState("flightMetaData")
-    const [currentFrameNumber] = useGlobalState("currentFrameNumber")
+    const [flightData] = useGlobalState(flightDataState)
+    const [currentFrameNumber] = useGlobalState(currentFrameNumberState)
 
     let data: TableEntry[] = []
     if(currentFrameNumber === undefined || currentFrameNumber === -1) {
         data = []
     }
     else {
-        const position = getCanSatPosition(currentFrameNumber)
-        const velocity = getVelocity(currentFrameNumber)
-        const acceleration = getAcceleration(currentFrameNumber)        
+        const position = flightData.getPosition(currentFrameNumber)
+        const velocity = flightData.getVelocity(currentFrameNumber)
+        const acceleration = flightData.getAcceleration(currentFrameNumber)        
 
         data = [
             {
                 rowName: "Time",
-                value: getTime(flightMetaData, currentFrameNumber).toFixed(1),
+                value: flightData.getTime(currentFrameNumber).toFixed(1),
                 unit: "s"
             },            
             {
                 rowName: "Longitude",
-                value: getLongitude(flightMetaData, currentFrameNumber).toFixed(5),
+                value: flightData.getLongitude(currentFrameNumber).toFixed(5),
                 unit: "°"
             },
             {
                 rowName: "Latitude",
-                value: getLatitude(flightMetaData, currentFrameNumber).toFixed(5),
+                value: flightData.getLatitude(currentFrameNumber).toFixed(5),
                 unit: "°"
             },
             {
                 rowName: "Azimuth",
-                value: getAzimuth(currentFrameNumber),
+                value: flightData.getAzimuth(currentFrameNumber),
                 unit: "°"
             },
             {
                 rowName: "Temperature",
-                value: getTemperature(currentFrameNumber).toFixed(1),
+                value: flightData.getTemperature(currentFrameNumber).toFixed(1),
                 unit: "°C"
             },
             {
                 rowName: "Pressure",
-                value: getPressure(currentFrameNumber).toFixed(1),
+                value: flightData.getPressure(currentFrameNumber).toFixed(1),
                 unit: "hPa"
             },
             {
@@ -97,13 +97,12 @@ export const OutputTable = () => {
     }
     
     return(
-        <TableBody className="DataTable">
+        <TableBody>
             {
                 data.map(({rowName, value, unit}) => (
                     <TableRow key={rowName}>
                         <TableCell align="left">{rowName}</TableCell>
-                        <TableCell align="right">{value}</TableCell>
-                        {unit && <TableCell align="left">{unit}</TableCell>}
+                        <TableCell align="right"> {value} {unit && unit} </TableCell>
                     </TableRow>
                 ))
             }

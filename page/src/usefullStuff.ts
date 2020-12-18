@@ -4,16 +4,33 @@ export interface Vector {
     z: number
 }
 
-export function addVectors(v1: Vector, v2: Vector): Vector {
-    return {
-        x: v1.x + (v2.x / 30),
-        y: v1.y + (v2.y / 30),
-        z: v1.z + (v2.z / 30)
-    }
+interface GeolocationCoordinates {
+    readonly accuracy: number;
+    readonly altitude: number | null;
+    readonly altitudeAccuracy: number | null;
+    readonly heading: number | null;
+    readonly latitude: number;
+    readonly longitude: number;
+    readonly speed: number | null;
 }
 
-export const getPosition = () => new Promise<Position>((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(resolve, reject);
+declare var GeolocationCoordinates: {
+    prototype: GeolocationCoordinates;
+    new(): GeolocationCoordinates;
+};
+
+interface GeolocationPosition {
+    readonly coords: GeolocationCoordinates;
+    readonly timestamp: number;
+}
+
+declare var GeolocationPosition: {
+    prototype: GeolocationPosition;
+    new(): GeolocationPosition;
+};
+
+export const getPosition = () => new Promise<GeolocationPosition>((resolve, reject) => {        
+    navigator.geolocation.getCurrentPosition(resolve, reject);    
 })
 
 interface WeatherResp {

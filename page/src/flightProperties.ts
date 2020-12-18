@@ -1,114 +1,117 @@
-import { flightProperties } from "."
 import { Vector } from "./usefullStuff"
 
 const earthRadius = 6371e3
 const earthCircumference = Math.PI * 2 * earthRadius
 const degPerMeter = 360 / earthCircumference
 
-export interface SimProperties {
-    canSatPosition: Vector,
+export interface SimFrame {
+    position: Vector,
     velocity: Vector,
     acceleration: Vector,
     azimuth: number
 }
 
-export interface SimMetaData {
-    frameRate: number        
-    initialLongitude: number
-    initialLatitude: number
-    initialHeight: number
-    canSatMass: number
-    canSatSurfaceArea: number
-    airCS: number
-    windSpeed: number
-    windAzimuth: number
+export class SimData {    
+    constructor(
+        public frameRate: number = 30,
+        public initialLongitude: number = 0,
+        public initialLatitude: number = 0,
+        public initialHeight: number = 1000,
+        public canSatMass: number = 0.3,
+        public canSatSurfaceArea: number = 0.00759,
+        public airCS: number = 0.3,
+        public windSpeed: number = 2,
+        public windAzimuth: number = 2,        
+        public frames: SimFrame[] = []
+    ){}    
+
+    getPosition(i: number): Vector {        
+        return this.frames[i].position
+    }
+    
+    getVelocity(i: number): Vector {
+        return this.frames[i].velocity
+    }
+    
+    getAcceleration(i: number): Vector {
+        return this.frames[i].acceleration
+    }
+    
+    getAzimuth(i: number): number {    
+        return this.frames[i].azimuth
+    }
+    
+    getPressure(i: number): number {
+        return 101325 * Math.pow(1-2.25577 * Math.pow(10, -5) * this.frames[i].position.y, 5.25588) / 100
+    }
+    
+    getTemperature(i: number): number {
+        return i
+    }
+    
+    getLatitude(i: number): number {
+        return this.initialLongitude + this.frames[i].position.x * degPerMeter        
+    }
+    
+    getLongitude(i: number): number {        
+        return this.initialLatitude + this.frames[i].position.z * degPerMeter
+    }
+    
+    getTime(i: number): number {        
+        return i / this.frameRate    
+    }
 }
 
-export const DefaultSimMetaData: SimMetaData = {
-    frameRate: 30,
-    initialLongitude: 0,
-    initialLatitude: 0,
-    initialHeight: 1000,
-    canSatMass: 0.3,
-    canSatSurfaceArea: 0.3,
-    airCS: 1,
-    windSpeed: 2,
-    windAzimuth: 0,
-}
-
-export interface StationProperties {
+export interface StationFrame {
     azimuth: number
     pressure: number,
     temperature: number,
     latitude: number,
     longitude: number,
-    time: number
+    time: number,
+    height: number,
+    rssi: number
 }
 
-export interface StationMetaData {
-    date: number    
-}
-
-export const DefaultStationFlightData: StationMetaData = {
-    date: 0
-}
-
-export function getCanSatPosition(i: number): Vector {
-    if("canSatPosition" in flightProperties[0]) {
-        return (flightProperties[i] as SimProperties).canSatPosition
+export class StationData {
+    constructor(
+        public date: number = 0,
+        public frames: StationFrame[] = []
+    ){} 
+    
+    getPosition(i: number): Vector {        
+        return {x: 0, y: this.frames[i].height, z: 0}
     }
-    return {x: 0, y: 0, z: 0}
-}
-
-export function getVelocity(i: number): Vector {
-    if("canSatPosition" in flightProperties[0]) {
-        return (flightProperties[i] as SimProperties).velocity
+    
+    getVelocity(i: number): Vector {        
+        return {x: 0, y: 0, z: 0}
     }
-    return {x: 0, y: 0, z: 0}
-}
-
-export function getAcceleration(i: number): Vector {
-    if("canSatPosition" in flightProperties[0]) {
-        return (flightProperties[i] as SimProperties).acceleration
+    
+    getAcceleration(i: number): Vector {
+        return {x: 0, y: 0, z: 0}
     }
-    return {x: 0, y: 0, z: 0}
-}
-
-export function getAzimuth(i: number): number {    
-    return flightProperties[i].azimuth
-}
-
-export function getPressure(i: number): number {
-    if("canSatPosition" in flightProperties[0]) {
-        return 101325 * Math.pow(1-2.25577 * Math.pow(10, -5) * (flightProperties[i] as SimProperties).canSatPosition.y, 5.25588) / 100
+    
+    getAzimuth(i: number): number {    
+        return this.frames[i].azimuth
     }
-    return (flightProperties[i] as StationProperties).pressure
-}
-
-export function getTemperature(i: number): number {
-    if("canSatPosition" in flightProperties[0]) {
-        return 0
+    
+    getPressure(i: number): number {        
+        return this.frames[i].pressure
     }
-    return (flightProperties[i] as StationProperties).temperature
-}
-
-export function getLatitude(data: StationMetaData | SimMetaData, i: number): number {
-    if("frameRate" in data) {
-        return data.initialLongitude + (flightProperties[i] as SimProperties).canSatPosition.x * degPerMeter
+    
+    getTemperature(i: number): number {
+        return this.frames[i].temperature
     }
-    return (flightProperties[i] as StationProperties).latitude
-}
-
-export function getLongitude(data: StationMetaData | SimMetaData, i: number): number {
-    if("frameRate" in data) {
-        return data.initialLatitude + (flightProperties[i] as SimProperties).canSatPosition.z * degPerMeter
+    
+    getLatitude(i: number): number {
+        return this.frames[i].latitude
     }
-    return (flightProperties[i] as StationProperties).longitude
-}
-
-export function getTime(data: StationMetaData | SimMetaData, i: number): number {
-    if("frameRate" in data) {
-        return i / data.frameRate    
+    
+    getLongitude(i: number): number {
+        return this.frames[i].longitude
     }
-    return (flightProperties[i] as StationProperties).time
+    
+    getTime(i: number): number {
+        return this.frames[i].time
+    }
 }

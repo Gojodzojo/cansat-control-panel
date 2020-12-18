@@ -10,7 +10,10 @@ export const SerialDialog: FC<props> = ({open}) => (
         <DialogTitle id="alert-dialog-title"> Serial communication is turned off </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Aplication can not use the ground station mode because 
+            To use ground station mode you must use browser based on chromium and enable 
+            experimental web platform features
+            <br /> <br />            
+            chrome://flags/#enable-experimental-web-platform-features
           </DialogContentText>
         </DialogContent>
     </Dialog>

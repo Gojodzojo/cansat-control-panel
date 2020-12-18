@@ -1,59 +1,57 @@
+import "./index.scss"
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { App } from './App/App'
-import { SimMetaData, StationMetaData, SimProperties, StationProperties, DefaultSimMetaData } from './flightProperties'
-import { createGlobalState } from 'react-hooks-global-state'
-import { ExportFields } from 'react-hooks-global-state/dist/src/createGlobalState'
+import { SimData, StationData } from './flightProperties'
+import { GlobalState } from './globalState'
+//import { AdditionalApp } from "./AdditionalApp/AdditionalApp"
 
 export const AppModes = ["Simulator", "Station", "Player"] as const
 export type AppMode = typeof AppModes[number]
 
-interface GlobalStateProperties {
-  currentAppMode: AppMode
-  flightMetaData: SimMetaData | StationMetaData
-  isRunning: boolean
-  currentFrameNumber: number | undefined
-  isPaused: boolean
-}
-
-interface GlobalState {
-  useGlobalStateProvider: () => void;
-  useGlobalState: <StateKey extends keyof GlobalStateProperties>(stateKey: StateKey) => readonly [GlobalStateProperties[StateKey], (u: import("react").SetStateAction<GlobalStateProperties[StateKey]>) => void];
-  getGlobalState: <StateKey_1 extends keyof GlobalStateProperties>(stateKey: StateKey_1) => GlobalStateProperties[StateKey_1];
-  setGlobalState: <StateKey_2 extends keyof GlobalStateProperties>(stateKey: StateKey_2, update: import("react").SetStateAction<GlobalStateProperties[StateKey_2]>) => void;
-  getState: () => GlobalStateProperties;
-  setState: (nextGlobalState: GlobalStateProperties) => void;
-  dispatch: (action: never) => never;
-}
+export const Utilities = [
+  "Visualizer",
+  "Graph",
+  "Data table",
+  "Message sender"
+] as const
+export type Utility = typeof Utilities[number]
 
 declare global {
   interface Window {
-    globalState: Pick<GlobalState, ExportFields>
-    flightProperties: SimProperties[] | StationProperties[]
+    sharedState: {
+      currentAppModeState: GlobalState<AppMode>
+      flightDataState: GlobalState<SimData | StationData>
+      isRunningState: GlobalState<boolean>
+      currentFrameNumberState: GlobalState<number | undefined>
+      isPausedState: GlobalState<boolean>
+      serialPort: GlobalState<any>
+    }    
+    defaultUtilities: Utility[]
   }
 }
 
-if(window.opener === null) {
-  window.globalState = createGlobalState<GlobalStateProperties>({
-    currentAppMode: "Simulator",
-    isRunning: false,
-    currentFrameNumber: undefined,
-    isPaused: false,
-    flightMetaData: DefaultSimMetaData
-  })
-  window.flightProperties = []
-  //window.open("./", "_blank")
+if(window.opener === null) {  
+  window.sharedState = {
+    currentAppModeState: new GlobalState<AppMode>("Simulator"),
+    isRunningState: new GlobalState<boolean>(false),
+    currentFrameNumberState: new GlobalState<number | undefined>(undefined),
+    isPausedState: new GlobalState<boolean>(false),
+    flightDataState: new GlobalState<SimData | StationData>(new SimData()),
+    serialPort: new GlobalState<any>(undefined)
+  }
+  window.defaultUtilities = ["Visualizer", "Data table", "Graph"]
 }
-else {
-  const {globalState, flightProperties} = (window.opener as Window)
-  window.globalState = globalState
-  window.flightProperties = flightProperties
+else {  
+  window.sharedState = (window.opener as Window).sharedState
 } 
 
-export const {getGlobalState, setGlobalState, useGlobalState, useGlobalStateProvider} = window.globalState
-export const {flightProperties} = window
+export const {currentAppModeState, isRunningState, currentFrameNumberState, isPausedState, flightDataState} = window.sharedState
+
 
 ReactDOM.render(
-  <React.StrictMode> <App /> </React.StrictMode>,
+  <React.StrictMode>
+    <App defautlUtilities={window.defaultUtilities}/>
+  </React.StrictMode>,
   document.getElementById('root')
 )

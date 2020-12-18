@@ -1,9 +1,11 @@
 import "./Graph.scss"
-import React, { useEffect, useRef, useState } from 'react'
-import {XYPlot, XAxis, YAxis, HorizontalGridLines, LineSeries, LineSeriesPoint, VerticalGridLines} from 'react-vis'
-import { getAcceleration, getCanSatPosition, getPressure, getTemperature, getTime, getVelocity, SimMetaData, StationMetaData } from "../flightProperties"
-import { useGlobalState } from ".."
-import { Paper } from "@material-ui/core"
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {XYPlot, XAxis, YAxis, HorizontalGridLines, LineSeries, LineSeriesPoint } from 'react-vis'
+//import { getAcceleration, getCanSatPosition, getPressure, getTemperature, getTime, getVelocity, SimMetaData, StationMetaData } from "../flightProperties"
+import { useGlobalState } from "../globalState"
+import { currentFrameNumberState, flightDataState } from ".."
+import { SettingsOption, UtilityWindow } from "../UtilityWindow/UtilityWindow"
+import { SimData, StationData } from "../flightProperties"
 
 export const Properties = [
     "Position x",
@@ -22,20 +24,28 @@ export const Properties = [
 
 export type Property = typeof Properties[number]
 
-export const Graph = () => {
-    const [flightMetaData] = useGlobalState("flightMetaData")
-    const [currentFrameNumber] = useGlobalState("currentFrameNumber")
+interface props {
+    removeUtility: () => void
+    bigWindow: boolean
+}
+
+const margin = 50
+const emptyData: LineSeriesPoint[] = [{x: 0, y: 0}]
+
+export const Graph:FC<props> = ({removeUtility, bigWindow}) => {
+    const [flightMetaData] = useGlobalState(flightDataState)
+    const [currentFrameNumber] = useGlobalState(currentFrameNumberState)
     const [axisXProperty, setAxisXProperty] = useState<Property>("Time")
     const [axisYProperty, setAxisYProperty] = useState<Property>("Velocity y")
     const [plotSize, setPlotSize] = useState({width: 0, height: 0})
     const GraphDiv = useRef<HTMLDivElement | null>(null)
-    const data = useRef<LineSeriesPoint[]>([])
+    const data = useRef<LineSeriesPoint[]>([{x: 0, y: 0}])    
     
-    const resizeGraph = () => {
+    const resizeGraph = useCallback(() => {
         if(GraphDiv.current === null) return
         const {width, height} = GraphDiv.current.getBoundingClientRect()
-        setPlotSize({width, height})
-    }
+        setPlotSize({width: width - margin, height: height - margin})
+    }, [setPlotSize, removeUtility])
     
     useEffect(() => {
         resizeGraph()
@@ -49,7 +59,7 @@ export const Graph = () => {
 
     useEffect(() => {
         if(currentFrameNumber === undefined || currentFrameNumber === -1) {
-            data.current = [{x: 0, y: 0}]
+            data.current = []
         }
         else {        
             for(let i = data.current.length; i <= currentFrameNumber; i++) {
@@ -60,49 +70,82 @@ export const Graph = () => {
             }
         }
     }, [currentFrameNumber])
-    
 
+    const settingsOptions: SettingsOption[] = useMemo(() => [
+        {
+            title: "Remove window",
+            action: removeUtility        
+        },
+        {
+            title: "Open in new window",
+            action: () => {
+                const newWindow = window.open("./", "_blank")
+                if(newWindow) {
+                    newWindow.defaultUtilities = ["Graph"]
+                }
+                removeUtility()
+            }
+        }, 
+        {
+            title: "Axis x property",
+            subOptions: Properties.map((propertyName): SettingsOption => ({
+                title: propertyName,
+                action: () => setAxisXProperty(propertyName)
+            }))
+        },
+        {
+            title: "Axis y property",
+            subOptions: Properties.map((propertyName): SettingsOption => ({
+                title: propertyName,
+                action: () => setAxisYProperty(propertyName)
+            }))
+        }
+    ], [])
+        
     const {width, height} = plotSize
     return(
-        <Paper className="Graph" ref={GraphDiv} color="red">
-            <XYPlot width={width} height={height} stroke="#fab132" >
-                <HorizontalGridLines />
-                <VerticalGridLines />
-                <LineSeries data={data.current} />
-                <XAxis />
-                <YAxis />
-            </XYPlot>            
-        </Paper>
+        <UtilityWindow className="Graph" settingsOptions={settingsOptions} bigWindow={bigWindow}>
+            <span className="axisName Y"> { axisYProperty } </span>
+            <span className="axisName X"> { axisXProperty } </span>
+            <div ref={GraphDiv} onClick={resizeGraph}>
+                <XYPlot width={width} height={height} stroke="#fab132" >
+                    <HorizontalGridLines />                
+                    <LineSeries data={(data.current.length === 0)? emptyData : data.current} />
+                    <XAxis />
+                    <YAxis />
+                </XYPlot>            
+            </div>            
+        </UtilityWindow>
     )
 }
 
 
-function pickProperties(data: StationMetaData | SimMetaData, p: Property, i: number): number {
+function pickProperties(data: SimData | StationData, p: Property, i: number): number {
     switch(p) {
         case "Position x":
-            return getCanSatPosition(i).x
+            return data.getPosition(i).x
         case "Position y":
-            return getCanSatPosition(i).y
+            return data.getPosition(i).y
         case "Position z":
-            return getCanSatPosition(i).z
+            return data.getPosition(i).z
         case "Velocity x":
-            return getVelocity(i).x
+            return data.getVelocity(i).x
         case "Velocity y":
-            return getVelocity(i).y
+            return data.getVelocity(i).y
         case "Velocity z":
-            return getVelocity(i).z
+            return data.getVelocity(i).z
         case "Acceleration x":
-            return getAcceleration(i).x
+            return data.getAcceleration(i).x
         case "Acceleration y":
-            return getAcceleration(i).y
+            return data.getAcceleration(i).y
         case "Acceleration z":
-            return getAcceleration(i).z
+            return data.getAcceleration(i).z
         case "Pressure":
-            return getPressure(i)
+            return data.getPressure(i)
         case "Temperature":
-            return getTemperature(i)
+            return data.getTemperature(i)
         case "Time":
-            return getTime(data, i)
+            return data.getTime(i)
         default:
             return 0
     }        

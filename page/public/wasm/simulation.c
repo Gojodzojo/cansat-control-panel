@@ -46,18 +46,18 @@ void setVariables(double newCanSatMass, double newAirCS, double windSpeed, doubl
   canSatMass = newCanSatMass;
   airCS = newAirCS;
 
-  /*double rad = deg2rad(windAzimuth);
+  double rad = deg2rad(windAzimuth);
   struct Vector windForce = {cos(rad) * -1, 0, sin(rad) * -1};
   if (windAzimuth <= 180) {
     windForce = multiplyByScalar(&windForce, -1);
   }
 
-   https://www.engineeringtoolbox.com/wind-load-d_1775.html */
-	/*double windForceVal = 0.5 * airCS * airDensity * pow(windSpeed, 2);
+  /* https://www.engineeringtoolbox.com/wind-load-d_1775.html */
+	double windForceVal = 0.5 * canSatSurfaceArea * airDensity * pow(windSpeed, 2);
 	windForce = multiplyByScalar(&windForce, windForceVal);
-	struct Vector windAcceleration = multiplyByScalar(&windForce, 1 / canSatMass);*/
+	struct Vector windAcceleration = multiplyByScalar(&windForce, 1 / canSatMass);
 
-  //acceleration = windAcceleration;
+  acceleration = windAcceleration;
   acceleration.y = gravityForceVal * -1;
 
   velocity.x = 0;
