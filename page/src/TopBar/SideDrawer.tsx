@@ -21,7 +21,7 @@ export const SideDrawer: FC<props> = ({closeDrawer, isDrawerOpened}) => {
             else {
                 setFlightProperties(new SimData(), true)
             }
-            setCurrentAppMode(newMode, true)
+            setCurrentAppMode(newMode)
         }
         closeDrawer()
     }

@@ -18,37 +18,28 @@ interface props {
 export const TopBar: FC<props> = ({addUtility}) => {
     const [isRunning, setIsRunning] = useGlobalState(isRunningState)
     const [isPaused, setIsPaused] = useGlobalState(isPausedState)
-    const [flightMetaData] = useGlobalState(flightDataState)
+    const [flightData] = useGlobalState(flightDataState)
     const [currentAppMode] = useGlobalState(currentAppModeState)
-    const [isDrawerOpened, setIsDrawerOpened] = useState(true)    
-
-    const doMagic = () => {        
-        if("date" in flightMetaData && currentAppMode === "Station") {            
-            watchForData()
-        }
-        else if("frameRate" in flightMetaData && currentAppMode === "Simulator") {
-            simulate()
-        }                
-    }
+    const [isDrawerOpened, setIsDrawerOpened] = useState(true)
+    const [device, setDevice] = useState<any | undefined>(undefined)
 
     useEffect(() => {
         if(isRunning) {            
-            doMagic()
+            if("date" in flightData && currentAppMode === "Station") {
+                watchForData(device)
+            }
+            else if("frameRate" in flightData && currentAppMode === "Simulator") {
+                simulate()
+            }
+            else {
+                console.log("TopBar error")
+            }
         }        
     }, [isRunning])    
 
-    /*function handleStartStop() {
-        setIs !$isRunning
-        if($isRunning) {
-          if($currentAppMode === "Simulator") {
-            simulate()
-          }
-          else if($currentAppMode === "Station") {
-            watchForData(device)
-          }
-        }
-      }*/
-    
+    const handleDeviceSelect = async () => {
+        setDevice(await (navigator as any).serial.requestPort())
+    }
 
     return(
         <AppBar className="TopBar" position="static" >
@@ -61,15 +52,26 @@ export const TopBar: FC<props> = ({addUtility}) => {
                     <IconButton onClick={() => setIsPaused(!isPaused, true)}>
                         <img src={isPaused? playIcon : pauseIcon} />
                     </IconButton>
-                }
+                }                
+                {currentAppMode === "Station" &&
+                    <Button
+                        variant="contained"
+                        size="medium"
+                        className="Button"
+                        onClick={handleDeviceSelect}
+                    >
+                        { device === undefined? "Select device" : "Device is selected" }
+                    </Button>
+                }     
                 <Button
                     variant="contained"
                     size="medium"
-                    className="runButton"
-                    onClick={() => setIsRunning(!isRunning, true)}
+                    className="Button"
+                    onClick={() => setIsRunning(!isRunning)}
+                    disabled={currentAppMode === "Station" && device === undefined}
                 >
                     { isRunning? "Stop" : "Run" }
-                </Button>                
+                </Button>
             </Toolbar>
             <SideDrawer
                 closeDrawer={() => setIsDrawerOpened(false)}

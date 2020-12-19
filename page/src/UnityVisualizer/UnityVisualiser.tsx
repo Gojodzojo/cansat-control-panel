@@ -1,10 +1,10 @@
 import "./UnityVisualizer.scss"
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Unity, { UnityContent } from "react-unity-webgl"
-import { Vector } from "../usefullStuff"
 import { useGlobalState } from "../globalState"
 import { currentAppModeState, currentFrameNumberState, flightDataState, isRunningState } from ".."
 import { SettingsOption, UtilityWindow } from "../UtilityWindow/UtilityWindow"
+import { Vector } from "../flightProperties"
 
 const CAMERA_MODES = [
     {

@@ -16,6 +16,9 @@ export class GlobalState<T> {
     setValue(newVal: T, replace?: true): void
     setValue(newVal: { [key in keyof T]?: T[key] }, replace?: false): void
     setValue(newVal: any, replace: boolean = false) {
+        if(typeof newVal !== "object") {
+            replace = true
+        }
         if(replace) {
             if(this.value !== newVal) {
                 this.value = newVal

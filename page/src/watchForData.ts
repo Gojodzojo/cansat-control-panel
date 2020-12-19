@@ -1,14 +1,15 @@
-import { currentFrameNumberState, flightDataState, isPausedState, isRunningState } from "."
+import { currentFrameNumberState, flightDataState, isPausedState, isRunningState, serialWriterState } from "."
 import { StationData } from "./flightProperties"
 import { GlobalState } from "./globalState"
 
-export const watchForData = async () => {
-    const device = await (navigator as any).serial.requestPort()
+export const watchForData = async (device: any) => {
     await device.open({ baudRate: 115200 })
 
     const textDecoder = new TextDecoderStream()
     const readableStreamClosed = device.readable.pipeTo(textDecoder.writable)
     const reader = textDecoder.readable.getReader();
+    const writer = device.writable.getWriter()
+    serialWriterState.setValue(writer, true);
     (flightDataState as GlobalState<StationData>).setValue({date: Date.now()})    
     const { frames, date } = flightDataState.getValue() as StationData
     isPausedState.setValue(false)
@@ -38,8 +39,10 @@ export const watchForData = async () => {
         }
     }
 
-    reader.cancel();
-    await readableStreamClosed.catch(() => { /* Ignore the error */ });    
+    serialWriterState.setValue(undefined)
+    reader.cancel()
+    await readableStreamClosed.catch(() => { /* Ignore the error */ })
+    writer.releaseLock()
     await device.close()
 
     currentFrameNumberState.setValue(undefined)

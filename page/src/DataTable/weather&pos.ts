@@ -1,9 +1,3 @@
-export interface Vector {
-    x: number,
-    y: number,
-    z: number
-}
-
 interface GeolocationCoordinates {
     readonly accuracy: number;
     readonly altitude: number | null;

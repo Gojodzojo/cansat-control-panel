@@ -1,4 +1,8 @@
-import { Vector } from "./usefullStuff"
+export interface Vector {
+    x: number,
+    y: number,
+    z: number
+}
 
 const earthRadius = 6371e3
 const earthCircumference = Math.PI * 2 * earthRadius
@@ -80,15 +84,39 @@ export class StationData {
     ){} 
     
     getPosition(i: number): Vector {        
-        return {x: 0, y: this.frames[i].height, z: 0}
+        return {
+            x: (this.getLongitude(i) - this.getLongitude(0)) * 111,
+            y: this.frames[i].height,
+            z: (this.getLatitude(i) - this.getLatitude(0)) * 111
+        }
     }
-    
+        
     getVelocity(i: number): Vector {        
-        return {x: 0, y: 0, z: 0}
+        if(i === 0) {
+            return {x: 0, y: 0, z: 0}
+        }
+        const deltaTime = this.getTime(i) - this.getTime(i - 1)
+        const currentPos = this.getPosition(i)
+        const prevPos = this.getPosition(i - 1)
+        return {
+            x: ( currentPos.x - prevPos.x ) / deltaTime,
+            y: ( currentPos.y - prevPos.y ) / deltaTime,
+            z: ( currentPos.z - prevPos.z ) / deltaTime,
+        }
     }
     
     getAcceleration(i: number): Vector {
-        return {x: 0, y: 0, z: 0}
+        if(i < 2) {
+            return {x: 0, y: 0, z: 0}
+        }
+        const deltaTime = this.getTime(i) - this.getTime(i - 1)
+        const currentVel = this.getVelocity(i)
+        const prevVel = this.getVelocity(i - 1)
+        return {
+            x: ( currentVel.x - prevVel.x ) / deltaTime,
+            y: ( currentVel.y - prevVel.y ) / deltaTime,
+            z: ( currentVel.z - prevVel.z ) / deltaTime,
+        }
     }
     
     getAzimuth(i: number): number {    
@@ -109,8 +137,8 @@ export class StationData {
     
     getLongitude(i: number): number {
         return this.frames[i].longitude
-    }
-    
+    }        
+
     getTime(i: number): number {
         return this.frames[i].time
     }

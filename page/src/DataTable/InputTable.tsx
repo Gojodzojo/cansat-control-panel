@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { currentAppModeState, flightDataState } from ".."
 import { SimData } from "../flightProperties"
 import { GlobalState, useGlobalState } from "../globalState"
-import { getPosition, getWeather } from "../usefullStuff"
+import { getPosition, getWeather } from "./weather&pos"
 import { TableEntry } from "./DataTable"
 
 export const InputTable = () => {    
