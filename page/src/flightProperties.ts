@@ -4,15 +4,42 @@ export interface Vector {
     z: number
 }
 
+export class PositionOrder {
+    code = 1            
+    constructor(
+        public longitude: number,
+        public latitude: number,
+        public delivered = false
+    ){}
+}
+
+export class AzimuthOrder {
+    code = 2
+    constructor(
+        public newAzimuth: number,
+        public delivered = false
+    ){}
+}
+
+export class EmergencyOrder {
+    code = 3
+    constructor(
+        public delivered = false
+    ){}
+}
+
+export type Order = PositionOrder | AzimuthOrder | EmergencyOrder
+
 const earthRadius = 6371e3
 const earthCircumference = Math.PI * 2 * earthRadius
 const degPerMeter = 360 / earthCircumference
 
 export interface SimFrame {
-    position: Vector,
-    velocity: Vector,
-    acceleration: Vector,
+    position: Vector
+    velocity: Vector
+    acceleration: Vector
     azimuth: number
+    message: number
 }
 
 export class SimData {    
@@ -26,7 +53,8 @@ export class SimData {
         public airCS: number = 0.3,
         public windSpeed: number = 2,
         public windAzimuth: number = 2,        
-        public frames: SimFrame[] = []
+        public frames: SimFrame[] = [],
+        public orders: Order[] = [new AzimuthOrder(0, true)]
     ){}    
 
     getPosition(i: number): Vector {        
@@ -68,19 +96,21 @@ export class SimData {
 
 export interface StationFrame {
     azimuth: number
-    pressure: number,
-    temperature: number,
-    latitude: number,
-    longitude: number,
-    time: number,
-    height: number,
+    pressure: number
+    temperature: number
+    latitude: number
+    longitude: number
+    time: number
+    height: number
     rssi: number
+    message: number    
 }
 
 export class StationData {
     constructor(
         public date: number = 0,
-        public frames: StationFrame[] = []
+        public frames: StationFrame[] = [],
+        public orders: Order[] = [new AzimuthOrder(0, true)]
     ){} 
     
     getPosition(i: number): Vector {        

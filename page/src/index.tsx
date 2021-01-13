@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom'
 import { App } from './App/App'
 import { SimData, StationData } from './flightProperties'
 import { GlobalState } from './globalState'
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 //import { AdditionalApp } from "./AdditionalApp/AdditionalApp"
 
 export const AppModes = ["Simulator", "Station", "Player"] as const
@@ -55,3 +56,5 @@ ReactDOM.render(
   </React.StrictMode>,
   document.getElementById('root')
 )
+
+serviceWorkerRegistration.register();

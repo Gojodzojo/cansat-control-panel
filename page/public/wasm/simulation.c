@@ -1,21 +1,31 @@
 #define WASM_EXPORT __attribute__((visibility("default")))
 #include <math.h>
 
+enum sateliteModes{
+  positionMode,
+  azimuthMode,
+  emergencyMode
+};
+
+struct Position {
+  int longitude, latitude;
+};
+
 struct Vector {
   double x, y, z;
 };
 
 extern void Log(double number);
-extern void setFlightProperties(
+extern void sendDataFrame(
   double positionX, double positionY, double positionZ,
   double velocityX, double velocityY, double velocityZ,
-  double accelerationX, double accelerationY, double accelerationZ
+  double accelerationX, double accelerationY, double accelerationZ,
+  double azimuth, int message
 );
 
-float airDensity = 1.225;
-float gravityForceVal = 9.80665;
-
-double canSatMass, airCS, deltaTime;
+float AIR_DENSITY = 1.225;
+int currentAzimuth, targetAzimuth, nextMessage;
+double canSatMass, deltaTime, descentSpeed, forwardSpeed, angularSpeed;
 struct Vector position, velocity, acceleration;
 
 struct Vector addVectors(struct Vector *v1, struct Vector *v2) {
@@ -41,10 +51,12 @@ double deg2rad(double deg) {
 }
 
 WASM_EXPORT
-void setVariables(double newCanSatMass, double newAirCS, double windSpeed, double windAzimuth, double canSatSurfaceArea, double initialHeight, double frameRate) {
-  deltaTime = 1/frameRate;
+void setVariables(double newDescentSpeed, double newForwardSpeed, double newAngularSpeed, double newCanSatMass, double windSpeed, double windAzimuth, double canSatSurfaceArea, double initialHeight, double frameRate) {
+  descentSpeed = newDescentSpeed;
+  forwardSpeed = newForwardSpeed;
+  angularSpeed = newAngularSpeed;  
   canSatMass = newCanSatMass;
-  airCS = newAirCS;
+  deltaTime = 1/frameRate;
 
   double rad = deg2rad(windAzimuth);
   struct Vector windForce = {cos(rad) * -1, 0, sin(rad) * -1};
@@ -53,15 +65,15 @@ void setVariables(double newCanSatMass, double newAirCS, double windSpeed, doubl
   }
 
   /* https://www.engineeringtoolbox.com/wind-load-d_1775.html */
-	double windForceVal = 0.5 * canSatSurfaceArea * airDensity * pow(windSpeed, 2);
+	double windForceVal = 0.5 * canSatSurfaceArea * AIR_DENSITY * pow(windSpeed, 2);
 	windForce = multiplyByScalar(&windForce, windForceVal);
 	struct Vector windAcceleration = multiplyByScalar(&windForce, 1 / canSatMass);
 
   acceleration = windAcceleration;
-  acceleration.y = gravityForceVal * -1;
+  //acceleration.y = gravityForceVal * -1;
 
   velocity.x = 0;
-  velocity.y = 0;
+  velocity.y = newDescentSpeed;
   velocity.z = 0;
 
   position.x = 0;
@@ -70,19 +82,16 @@ void setVariables(double newCanSatMass, double newAirCS, double windSpeed, doubl
 }
 
 WASM_EXPORT
-void doPhysics() {
-  // Do it as first to set properties in zero second  
-  setFlightProperties(
-    position.x, position.y, position.z,
-    velocity.x, velocity.y, velocity.z,
-    acceleration.x, acceleration.y, acceleration.z
-  );   
-
+void doPhysics() {      
   velocity = addVectors(&velocity, &acceleration);
   position = addVectors(&position, &velocity);  
-
-  // https://cnx.org/contents/TqqPA4io@2.43:olSre6jy@4/6-4-Si%C5%82a-oporu-i-pr%C4%99dko%C5%9B%C4%87-graniczna
-  double dragForceVal = 0.5 * airDensity * airCS * pow(velocity.y, 2);   
-  acceleration.y = (dragForceVal - gravityForceVal);
 }
 
+void steeringAlgorithm() {
+  sendDataFrame(
+    position.x, position.y, position.z,
+    velocity.x, velocity.y, velocity.z,
+    acceleration.x, acceleration.y, acceleration.z,
+    currentAzimuth, nextMessage
+  );
+}

@@ -9,7 +9,8 @@ let simFlightProperties: SimFrame = {
     position: {x: 0, y: 0, z: 0},
     velocity: {x: 0, y: 0, z: 0},
     acceleration: {x: 0, y: 0, z: 0},
-    azimuth: 0
+    azimuth: 0,
+    message: 0
 }
 
 const options = {
@@ -23,7 +24,7 @@ const options = {
             position: {x: positionX, y: positionY, z: positionZ},
             velocity: {x: velocityX, y: velocityY, z: velocityZ},
             acceleration: {x: accelerationX, y: accelerationY, z: accelerationZ},
-            azimuth: 0
+            azimuth: 0, message: 0
         }
     }
 };

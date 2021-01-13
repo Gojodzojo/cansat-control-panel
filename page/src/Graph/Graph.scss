@@ -1,18 +1,22 @@
 .Graph {
-    .axisName {
-        position: absolute;
-        display: block;
-        color: white;
+    position: relative;
 
-        &.Y {
+    .axisName {    
+        font-family: "Roboto", "Helvetica", "Arial", sans-serif;    
+        color: white;
+        position: absolute;
+
+        &.Y {            
             writing-mode: vertical-rl;
             text-orientation: mixed;
-            transform: translateY(calc((50vh - 20px - ( var(--topBar-height) / 2 )) / 2));
+            top: 50%;
+            transform: translateY(-50%);
         }
 
-        &.X {
-            transform-origin: center;
-            transform: translate( calc(25vw - 10px), calc(50vh - 20px - ( var(--topBar-height) / 2) - 100%) );
+        &.X {                               
+            left: 50%;
+            top: calc(100%);
+            transform: translate(-50%, -100%);
         }
     }
 

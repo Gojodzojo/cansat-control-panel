@@ -19,10 +19,24 @@ interface props {
     className?: string
     children: React.ReactNode
     bigWindow: boolean
-    container?: Element
+    optionsContainer?: Element
+    removeUtility: () => void
+    openInNewWindow: () => void
 }
 
-export const UtilityWindow = forwardRef<HTMLDivElement, props>( ({className, settingsOptions, children, bigWindow, container}, ref)  => {
+export const UtilityWindow = forwardRef<HTMLDivElement, props>( ({className, settingsOptions, children, bigWindow, optionsContainer, removeUtility, openInNewWindow}, ref)  => {
+    settingsOptions = [
+        ...settingsOptions,
+        {
+            title: "Remove window",
+            action: removeUtility        
+        },
+        {
+            title: "Open in new window",
+            action: openInNewWindow
+        }
+    ]
+    
     const [settingsState, setSettingsState] = useState<null | HTMLButtonElement | AnchorPosition>(null)
     const [openedSettingsOptions, setOpenedSettingsOptions] = useState<SettingsOption[]>(settingsOptions)
 
@@ -48,7 +62,7 @@ export const UtilityWindow = forwardRef<HTMLDivElement, props>( ({className, set
             anchorEl: settingsState,
             anchorReference: "anchorEl"
         }
-    }, [settingsState]) 
+    }, [settingsState])     
 
     const menuContent = openedSettingsOptions.map(({action, title, subOptions}, index) => 
         <MenuItem
@@ -81,10 +95,10 @@ export const UtilityWindow = forwardRef<HTMLDivElement, props>( ({className, set
                 onClick={({currentTarget}) => setSettingsState(currentTarget)}
             />
             <Menu
-                open={Boolean(settingsState)}
+                open={Boolean(settingsState)}                
                 {...menuProps}
                 onClose={() => {setOpenedSettingsOptions(settingsOptions); setSettingsState(null)}}
-                container={container}         
+                container={optionsContainer}         
             > { menuContent } </Menu>
             { children }
         </Paper>

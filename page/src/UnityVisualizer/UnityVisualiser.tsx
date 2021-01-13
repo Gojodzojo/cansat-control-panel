@@ -4,7 +4,7 @@ import Unity, { UnityContent } from "react-unity-webgl"
 import { useGlobalState } from "../globalState"
 import { currentAppModeState, currentFrameNumberState, flightDataState, isRunningState } from ".."
 import { SettingsOption, UtilityWindow } from "../UtilityWindow/UtilityWindow"
-import { Vector } from "../flightProperties"
+import { SimData, Vector } from "../flightProperties"
 
 const CAMERA_MODES = [
     {
@@ -34,10 +34,11 @@ function cerateUnityFunction <paramType> (unityContent: UnityContent, gameObject
 
 interface props {
     removeUtility: () => void
+    openInNewWindow: () => void
     bigWindow: boolean
 }
 
-export const UnityVisualiser: FC<props> = ({removeUtility, bigWindow}) => {    
+export const UnityVisualiser: FC<props> = ({removeUtility, openInNewWindow, bigWindow}) => {    
     const [flightData] = useGlobalState(flightDataState)
     const [currentAppMode] = useGlobalState(currentAppModeState)
     const [currentFrameNumber] = useGlobalState(currentFrameNumberState)
@@ -55,10 +56,11 @@ export const UnityVisualiser: FC<props> = ({removeUtility, bigWindow}) => {
     const moveCanSat = useCallback( cerateUnityFunction <Vector> (unityContent, "CanSat", "moveCanSat", true), [unityContent] )
     const setMarkEnabled = useCallback( cerateUnityFunction <boolean> (unityContent, "CanSat2d", "setMarkEnabled", true), [unityContent] )
     const setCoordinates = useCallback( cerateUnityFunction <Coordinates> (unityContent, "Map", "setCoordinates", true), [unityContent] )
-
+    
     useEffect(() => {
+        console.log("cos")
         if(isUnityLoaded) {
-            if(currentAppMode === "Simulator" && "frameRate" in flightData && !isRunning) {
+            if(currentAppMode === "Simulator" && "frameRate" in flightData && !isRunning) {                
                 const { initialHeight, initialLatitude, initialLongitude } = flightData
                 setOriginalHeightUnity(initialHeight + 1)
                 setCoordinates({x: initialLatitude, y: initialLongitude})
@@ -68,7 +70,7 @@ export const UnityVisualiser: FC<props> = ({removeUtility, bigWindow}) => {
                 moveCanSat( flightData.getPosition(currentFrameNumber) )
             }
         }
-    }, [flightData, currentAppMode, currentFrameNumber, isUnityLoaded])
+    }, [(flightData as SimData).initialHeight, (flightData as SimData).initialLatitude, (flightData as SimData).initialLongitude, currentAppMode, currentFrameNumber, isUnityLoaded, isRunning, moveCanSat, setCoordinates, setOriginalHeightUnity])
 
     useEffect(() => {
         const handleFullscreenChange = () => {
@@ -91,23 +93,13 @@ export const UnityVisualiser: FC<props> = ({removeUtility, bigWindow}) => {
         }
     }, [isFullscreen])
 
-    useEffect(() => setMarkEnabled(isMarkEnabled), [isMarkEnabled, isUnityLoaded])
+    useEffect(() => {
+        if(isUnityLoaded) {
+            setMarkEnabled(isMarkEnabled)
+        }        
+    }, [isMarkEnabled, isUnityLoaded, setMarkEnabled])
 
-    const settingsOptions: SettingsOption[] = useMemo(() => [
-        {
-            title: "Remove window",
-            action: removeUtility        
-        },
-        {
-            title: "Open in new window",
-            action: () => {
-                const newWindow = window.open("./", "_blank")
-                if(newWindow) {
-                    newWindow.defaultUtilities = ["Visualizer"]
-                }
-                removeUtility()
-            }
-        },
+    const settingsOptions: SettingsOption[] = useMemo(() => [        
         {
             title: `Turn ${isFullscreen? "off" : "on"} fullscreen`,
             action: () => setIsFullscreen(!isFullscreen)
@@ -130,7 +122,9 @@ export const UnityVisualiser: FC<props> = ({removeUtility, bigWindow}) => {
             settingsOptions={settingsOptions}
             bigWindow={(bigWindow || isFullscreen)}
             ref={UnityVisualiserRef}
-            container={(UnityVisualiserRef.current !== null)? UnityVisualiserRef.current : undefined}
+            optionsContainer={(UnityVisualiserRef.current !== null)? UnityVisualiserRef.current : undefined}
+            removeUtility={removeUtility}
+            openInNewWindow={openInNewWindow}
         >
             <Unity unityContent={unityContent} />
         </UtilityWindow>

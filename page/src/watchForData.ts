@@ -1,5 +1,5 @@
 import { currentFrameNumberState, flightDataState, isPausedState, isRunningState, serialWriterState } from "."
-import { StationData } from "./flightProperties"
+import { StationData, StationFrame } from "./flightProperties"
 import { GlobalState } from "./globalState"
 
 export const watchForData = async (device: any) => {
@@ -26,7 +26,7 @@ export const watchForData = async (device: any) => {
             jsonString += value                
             if(jsonString.charAt(jsonString.length - 1) === "}") {
                 try {
-                    const result = JSON.parse(jsonString)
+                    const result: StationFrame = JSON.parse(jsonString)
                     result.time = Date.now() - date
                     frames.push(result)
                     currentFrameNumberState.setValue(frames.length - 1)

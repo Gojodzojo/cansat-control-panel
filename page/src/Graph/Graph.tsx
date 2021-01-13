@@ -26,13 +26,14 @@ export type Property = typeof Properties[number]
 
 interface props {
     removeUtility: () => void
+    openInNewWindow: () => void
     bigWindow: boolean
 }
 
 const margin = 50
 const emptyData: LineSeriesPoint[] = [{x: 0, y: 0}]
 
-export const Graph:FC<props> = ({removeUtility, bigWindow}) => {
+export const Graph:FC<props> = ({removeUtility, openInNewWindow, bigWindow}) => {
     const [flightMetaData] = useGlobalState(flightDataState)
     const [currentFrameNumber] = useGlobalState(currentFrameNumberState)
     const [axisXProperty, setAxisXProperty] = useState<Property>("Time")
@@ -71,21 +72,7 @@ export const Graph:FC<props> = ({removeUtility, bigWindow}) => {
         }
     }, [currentFrameNumber])
 
-    const settingsOptions: SettingsOption[] = useMemo(() => [
-        {
-            title: "Remove window",
-            action: removeUtility        
-        },
-        {
-            title: "Open in new window",
-            action: () => {
-                const newWindow = window.open("./", "_blank")
-                if(newWindow) {
-                    newWindow.defaultUtilities = ["Graph"]
-                }
-                removeUtility()
-            }
-        }, 
+    const settingsOptions: SettingsOption[] = useMemo(() => [        
         {
             title: "Axis x property",
             subOptions: Properties.map((propertyName): SettingsOption => ({
@@ -104,7 +91,13 @@ export const Graph:FC<props> = ({removeUtility, bigWindow}) => {
         
     const {width, height} = plotSize
     return(
-        <UtilityWindow className="Graph" settingsOptions={settingsOptions} bigWindow={bigWindow}>
+        <UtilityWindow
+            className="Graph"
+            settingsOptions={settingsOptions}
+            bigWindow={bigWindow}
+            removeUtility={removeUtility}
+            openInNewWindow={openInNewWindow}
+        >
             <span className="axisName Y"> { axisYProperty } </span>
             <span className="axisName X"> { axisXProperty } </span>
             <div ref={GraphDiv} onClick={resizeGraph}>

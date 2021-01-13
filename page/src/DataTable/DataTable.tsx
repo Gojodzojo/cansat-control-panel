@@ -15,10 +15,11 @@ export interface TableEntry {
 
 interface props {
     removeUtility: () => void
+    openInNewWindow: () => void
     bigWindow: boolean
 }
 
-export const DataTable: FC<props> = ({removeUtility, bigWindow}) => {    
+export const DataTable: FC<props> = ({removeUtility, openInNewWindow, bigWindow}) => {    
     const [currentAppMode] = useGlobalState(currentAppModeState)
     const [isRunning] = useGlobalState(isRunningState)
 
@@ -29,18 +30,17 @@ export const DataTable: FC<props> = ({removeUtility, bigWindow}) => {
         },
         {
             title: "Open in new window",
-            action: () => {
-                const newWindow = window.open("./", "_blank")
-                if(newWindow) {
-                    newWindow.defaultUtilities = ["Data table"]
-                }
-                removeUtility()
-            }
+            action: openInNewWindow
         }
     ], [])
        
     return(
-        <UtilityWindow settingsOptions={settingsOptions} bigWindow={bigWindow}>
+        <UtilityWindow
+            settingsOptions={settingsOptions}
+            bigWindow={bigWindow}
+            removeUtility={removeUtility}
+            openInNewWindow={openInNewWindow}
+        >
             <TableContainer component={ props => <Paper {...props} className="DataTable"/> }>
                 <Table>
                     {currentAppMode === "Simulator" && isRunning === false?

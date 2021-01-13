@@ -18,33 +18,7 @@ export const InputTable = () => {
         setCurrentAppMode("Station", true)
     }
 
-    const { frameRate, initialLatitude, initialLongitude, initialHeight, canSatMass, canSatSurfaceArea, airCS, windAzimuth, windSpeed } = flightData as SimData      
-
-    // useEffect(() => {
-    //     (async () => {
-    //         const {latitude, longitude} = (await getPosition()).coords
-    //         const resp = await getWeather(latitude, longitude)
-    //         setFlightData({
-    //             ...flightData,
-    //             initialLatitude: latitude,
-    //             initialLongitude: longitude,
-    //             ...resp
-    //         })
-    //     })()
-    // }, [automaticLocalisation])
-
-    
-    // useEffect(() => {
-    //     (async () => {
-    //         if(automaticWeather) {
-    //             const resp = await getWeather(initialLatitude, initialLongitude)
-    //             if(resp !== null) {
-    //                 setFlightData({...flightData, ...resp})
-    //             }
-    //         }
-    //     })()
-    // }, [automaticWeather])
-
+    const { frameRate, initialLatitude, initialLongitude, initialHeight, canSatMass, canSatSurfaceArea, airCS, windAzimuth, windSpeed } = flightData as SimData
     
     useEffect(() => {
         (async () => {
