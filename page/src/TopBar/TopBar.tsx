@@ -2,14 +2,14 @@ import "./TopBar.scss"
 import React, { FC, useEffect, useState } from "react"
 import { AppBar, Button, IconButton, Toolbar } from "@material-ui/core"
 import menuIcon from "./menuIcon.svg"
-import { simulate } from "../simulate"
+import { watchForSimulatorData } from "../watchForSimulatorData"
 import { useGlobalState } from "../globalState"
-import { currentAppModeState, flightDataState, isPausedState, isRunningState, Utility } from ".."
+import { currentAppModeState, isPausedState, isRunningState, Utility } from ".."
 import { SideDrawer } from "./SideDrawer"
 import { UtilitiesOpener } from "./UtilitiesOpener"
 import pauseIcon from "./pauseIcon.svg"
 import playIcon from "./playIcon.svg"
-import { watchForData } from "../watchForData"
+import { watchForStationData } from "../watchForStationData"
 
 interface props {
     addUtility: (u: Utility) => void
@@ -17,19 +17,18 @@ interface props {
 
 export const TopBar: FC<props> = ({addUtility}) => {
     const [isRunning, setIsRunning] = useGlobalState(isRunningState)
-    const [isPaused, setIsPaused] = useGlobalState(isPausedState)
-    const [flightData] = useGlobalState(flightDataState)
+    const [isPaused, setIsPaused] = useGlobalState(isPausedState)    
     const [currentAppMode] = useGlobalState(currentAppModeState)
     const [isDrawerOpened, setIsDrawerOpened] = useState(true)
     const [device, setDevice] = useState<any | undefined>(undefined)
 
     useEffect(() => {
         if(isRunning) {            
-            if("date" in flightData && currentAppMode === "Station") {
-                watchForData(device)
+            if(currentAppMode === "Station") {
+                watchForStationData(device)
             }
-            else if("frameRate" in flightData && currentAppMode === "Simulator") {
-                simulate()
+            else if(currentAppMode === "Simulator") {
+                watchForSimulatorData()
             }
             else {
                 console.log("TopBar error")

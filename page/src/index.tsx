@@ -2,9 +2,9 @@ import "./index.scss"
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { App } from './App/App'
-import { SimData, StationData } from './flightProperties'
 import { GlobalState } from './globalState'
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+import { FlightData, SimMetaData } from "./flightProperties"
 //import { AdditionalApp } from "./AdditionalApp/AdditionalApp"
 
 export const AppModes = ["Simulator", "Station", "Player"] as const
@@ -22,11 +22,12 @@ declare global {
   interface Window {
     sharedState: {
       currentAppModeState: GlobalState<AppMode>
-      flightDataState: GlobalState<SimData | StationData>
+      flightDataState: GlobalState<FlightData>
       isRunningState: GlobalState<boolean>
       currentFrameNumberState: GlobalState<number | undefined>
       isPausedState: GlobalState<boolean>
       serialWriterState: GlobalState<WritableStreamDefaultWriter | undefined>
+      simMetaDataState: GlobalState<SimMetaData>
     }    
     defaultUtilities: Utility[]
   }
@@ -38,8 +39,9 @@ if(window.opener === null) {
     isRunningState: new GlobalState<boolean>(false),
     currentFrameNumberState: new GlobalState<number | undefined>(undefined),
     isPausedState: new GlobalState<boolean>(false),
-    flightDataState: new GlobalState<SimData | StationData>(new SimData()),
-    serialWriterState: new GlobalState<WritableStreamDefaultWriter | undefined>(undefined)
+    flightDataState: new GlobalState<FlightData>(new FlightData()),
+    serialWriterState: new GlobalState<WritableStreamDefaultWriter | undefined>(undefined),
+    simMetaDataState: new GlobalState<SimMetaData>(new SimMetaData())
   }
   window.defaultUtilities = ["Visualizer", "Data table", "Graph", "Message sender"]
 }
@@ -47,7 +49,7 @@ else {
   window.sharedState = (window.opener as Window).sharedState
 } 
 
-export const {currentAppModeState, isRunningState, currentFrameNumberState, isPausedState, flightDataState, serialWriterState} = window.sharedState
+export const {currentAppModeState, isRunningState, currentFrameNumberState, isPausedState, flightDataState, serialWriterState, simMetaDataState} = window.sharedState
 
 
 ReactDOM.render(

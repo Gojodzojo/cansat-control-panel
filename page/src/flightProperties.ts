@@ -5,46 +5,33 @@ export interface Vector {
 }
 
 export class PositionOrder {
-    code = 1            
+    readonly code = 1
+    delivered = false 
     constructor(
         public longitude: number,
-        public latitude: number,
-        public delivered = false
+        public latitude: number,        
     ){}
 }
 
 export class AzimuthOrder {
-    code = 2
+    readonly code = 2
+    delivered = false
     constructor(
-        public newAzimuth: number,
-        public delivered = false
+        public newAzimuth: number,        
     ){}
 }
 
 export class EmergencyOrder {
-    code = 3
-    constructor(
-        public delivered = false
-    ){}
+    readonly code = 3
+    delivered = false    
 }
 
 export type Order = PositionOrder | AzimuthOrder | EmergencyOrder
 
-const earthRadius = 6371e3
-const earthCircumference = Math.PI * 2 * earthRadius
-const degPerMeter = 360 / earthCircumference
-
-export interface SimFrame {
-    position: Vector
-    velocity: Vector
-    acceleration: Vector
-    azimuth: number
-    message: number
-}
-
-export class SimData {    
+export class SimMetaData {    
     constructor(
-        public frameRate: number = 30,
+        public calculationsRate: number = 30,
+        public dataRate: number = 1,
         public initialLongitude: number = 0,
         public initialLatitude: number = 0,
         public initialHeight: number = 1000,
@@ -52,49 +39,11 @@ export class SimData {
         public canSatSurfaceArea: number = 0.00759,
         public airCS: number = 0.3,
         public windSpeed: number = 2,
-        public windAzimuth: number = 2,        
-        public frames: SimFrame[] = [],
-        public orders: Order[] = [new AzimuthOrder(0, true)]
+        public windAzimuth: number = 2,
     ){}    
-
-    getPosition(i: number): Vector {        
-        return this.frames[i].position
-    }
-    
-    getVelocity(i: number): Vector {
-        return this.frames[i].velocity
-    }
-    
-    getAcceleration(i: number): Vector {
-        return this.frames[i].acceleration
-    }
-    
-    getAzimuth(i: number): number {    
-        return this.frames[i].azimuth
-    }
-    
-    getPressure(i: number): number {
-        return 101325 * Math.pow(1-2.25577 * Math.pow(10, -5) * this.frames[i].position.y, 5.25588) / 100
-    }
-    
-    getTemperature(i: number): number {
-        return i
-    }
-    
-    getLatitude(i: number): number {
-        return this.initialLongitude + this.frames[i].position.x * degPerMeter        
-    }
-    
-    getLongitude(i: number): number {        
-        return this.initialLatitude + this.frames[i].position.z * degPerMeter
-    }
-    
-    getTime(i: number): number {        
-        return i / this.frameRate    
-    }
 }
 
-export interface StationFrame {
+export interface DataFrame {
     azimuth: number
     pressure: number
     temperature: number
@@ -106,11 +55,10 @@ export interface StationFrame {
     message: number    
 }
 
-export class StationData {
+export class FlightData {
     constructor(
-        public date: number = 0,
-        public frames: StationFrame[] = [],
-        public orders: Order[] = [new AzimuthOrder(0, true)]
+        public frames: DataFrame[] = [],
+        public orders: Order[] = []
     ){} 
     
     getPosition(i: number): Vector {        
@@ -171,5 +119,5 @@ export class StationData {
 
     getTime(i: number): number {
         return this.frames[i].time
-    }
+    }    
 }
