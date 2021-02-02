@@ -1,25 +1,40 @@
 import { currentFrameNumberState, isPausedState, isRunningState, flightDataState, simMetaDataState } from "."
-import { receiveData, startSimulation, stopSimulation } from "./wasmImport"
+import { DataFrame, SimMetaData } from "./flightProperties"
 
-export const watchForSimulatorData = async () => {    
-    // Set information about environment and satellite and start the simulation loop
-    const {canSatMass, airCS, windSpeed, windAzimuth, canSatSurfaceArea, initialHeight} = simMetaDataState.getValue()  
-    startSimulation(canSatMass, airCS, windSpeed, windAzimuth, canSatSurfaceArea, initialHeight)
+export type MessageData = {
+    action: "start"
+    simMetaData: SimMetaData
+} | {
+    action: "message"
+    messageBytes: Uint8Array
+} | {
+    action: "stop"
+}
 
-    // Set app initial values when starting simulation
+const worker = new Worker("./simulationWorker.js")
+
+function readData({ data }: MessageEvent<DataFrame>) {
+    console.log(data)
     const { frames } = flightDataState.getValue()
-    isPausedState.setValue(false)
-    currentFrameNumberState.setValue(-1)
+    frames.push(data)
+    currentFrameNumberState.setValue(frames.length - 1)
+}
 
-    while(isRunningState.getValue()) {
-        if(!isPausedState.getValue()) {                        
-            const result = await receiveData()
-            frames.push(result)
-            currentFrameNumberState.setValue(frames.length - 1)
-        }
-    }
-    
-    stopSimulation()
-    currentFrameNumberState.setValue(undefined)
-    frames.length = 0
+export function startSimulator() {        
+    worker.addEventListener("message", readData)
+
+    // Set information about environment and satellite and start the simulation loop     
+    worker.postMessage({
+        action: "start",
+        simMetaData: simMetaDataState.getValue()
+    } as MessageData)
+}
+
+export function stopSimulation() {
+    worker.postMessage({ action: "stop" } as MessageData)
+    worker.removeEventListener("message", readData)    
+}
+
+export function sendSimulatorMessage(messageBytes: Uint8Array) {
+    worker.postMessage({ action: "message", messageBytes } as MessageData)
 }

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ESNext",
     "lib": [
       "dom",
       "dom.iterable",
@@ -22,5 +22,5 @@
   },
   "include": [
     "src", "public/logic.ts"
-  ]
+, "public/simulationWorker.js"  ]
 }

@@ -4,29 +4,61 @@ export interface Vector {
     z: number
 }
 
-export class PositionOrder {
-    readonly code = 1
-    delivered = false 
+enum MessageCode {
+    error = -1,
+    nothing = 0,
+    position = 1,
+    azimuth = 2,
+    emergency = 3,
+    calibration = 4,
+    wait = 5
+};
+
+export class MessageFrame {
+    readonly messageCode: MessageCode = MessageCode.nothing
+    
+    toBytes() {
+        return new Uint8Array( new Int8Array([ this.messageCode ]).buffer )
+    }
+}
+
+export class PositionMessageFrame extends MessageFrame {
+    readonly messageCode = MessageCode.position
+
     constructor(
         public longitude: number,
         public latitude: number,        
-    ){}
+    ){ super() }
+
+    toBytes() {
+        return new Uint8Array([
+            ...new Uint8Array( new Int8Array([ this.messageCode ]).buffer ),
+            ...new Uint8Array( new Int32Array([
+                this.longitude * Math.pow(10, 6),
+                this.latitude * Math.pow(10, 6)
+            ]).buffer)
+        ])
+    }
 }
 
-export class AzimuthOrder {
-    readonly code = 2
-    delivered = false
+export class AzimuthMessageFrame extends MessageFrame {
+    readonly messageCode = MessageCode.azimuth
+    
     constructor(
         public newAzimuth: number,        
-    ){}
+    ){ super() }
+
+    toBytes() {
+        return new Uint8Array([
+            ...new Uint8Array( new Int8Array([ this.messageCode ]).buffer ),
+            ...new Uint8Array( new Int32Array([ this.newAzimuth ]).buffer )
+        ])
+    }
 }
 
-export class EmergencyOrder {
-    readonly code = 3
-    delivered = false    
+export class EmergencyMessageFrame extends MessageFrame {
+    readonly messageCode: MessageCode = MessageCode.emergency        
 }
-
-export type Order = PositionOrder | AzimuthOrder | EmergencyOrder
 
 export class SimMetaData {    
     constructor(
@@ -44,7 +76,7 @@ export class SimMetaData {
 }
 
 export interface DataFrame {
-    azimuth: number
+    heading: number
     pressure: number
     temperature: number
     latitude: number
@@ -52,13 +84,13 @@ export interface DataFrame {
     time: number
     height: number
     rssi: number
-    message: number    
+    messageCode: MessageCode
 }
 
 export class FlightData {
     constructor(
         public frames: DataFrame[] = [],
-        public orders: Order[] = []
+        public orders: MessageFrame[] = []
     ){} 
     
     getPosition(i: number): Vector {        
@@ -97,8 +129,8 @@ export class FlightData {
         }
     }
     
-    getAzimuth(i: number): number {    
-        return this.frames[i].azimuth
+    getHeading(i: number): number {    
+        return this.frames[i].heading
     }
     
     getPressure(i: number): number {        

@@ -2,9 +2,9 @@ import "./UnityVisualizer.scss"
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Unity, { UnityContent } from "react-unity-webgl"
 import { useGlobalState } from "../globalState"
-import { currentAppModeState, currentFrameNumberState, flightDataState, isRunningState } from ".."
+import { currentAppModeState, currentFrameNumberState, flightDataState, isRunningState, simMetaDataState } from ".."
 import { SettingsOption, UtilityWindow } from "../UtilityWindow/UtilityWindow"
-import { SimData, Vector } from "../flightProperties"
+import { SimMetaData, Vector } from "../flightProperties"
 
 const CAMERA_MODES = [
     {
@@ -40,6 +40,7 @@ interface props {
 
 export const UnityVisualiser: FC<props> = ({removeUtility, openInNewWindow, bigWindow}) => {    
     const [flightData] = useGlobalState(flightDataState)
+    const [simMetaData] = useGlobalState(simMetaDataState)
     const [currentAppMode] = useGlobalState(currentAppModeState)
     const [currentFrameNumber] = useGlobalState(currentFrameNumberState)
     const [isRunning] = useGlobalState(isRunningState)
@@ -58,19 +59,19 @@ export const UnityVisualiser: FC<props> = ({removeUtility, openInNewWindow, bigW
     const setCoordinates = useCallback( cerateUnityFunction <Coordinates> (unityContent, "Map", "setCoordinates", true), [unityContent] )
     
     useEffect(() => {
-        console.log("cos")
-        if(isUnityLoaded) {
-            if(currentAppMode === "Simulator" && "frameRate" in flightData && !isRunning) {                
-                const { initialHeight, initialLatitude, initialLongitude } = flightData
-                setOriginalHeightUnity(initialHeight + 1)
-                setCoordinates({x: initialLatitude, y: initialLongitude})
-                moveCanSat({x: 0, y: initialHeight, z: 0})
-            }
-            else if(currentFrameNumber !== undefined && currentFrameNumber > 0) {
-                moveCanSat( flightData.getPosition(currentFrameNumber) )
-            }
+        if(isUnityLoaded && currentAppMode === "Simulator" && !isRunning) {            
+            const { initialHeight, initialLatitude, initialLongitude } = simMetaData
+            setOriginalHeightUnity(initialHeight + 1)
+            setCoordinates({x: initialLatitude, y: initialLongitude})
+            moveCanSat({x: 0, y: initialHeight, z: 0})
         }
-    }, [(flightData as SimData).initialHeight, (flightData as SimData).initialLatitude, (flightData as SimData).initialLongitude, currentAppMode, currentFrameNumber, isUnityLoaded, isRunning, moveCanSat, setCoordinates, setOriginalHeightUnity])
+    }, [ simMetaData.initialHeight, simMetaData.initialLatitude, simMetaData.initialLongitude, isUnityLoaded, isRunning ])
+
+    useEffect(() => {                
+        if(isRunning && currentFrameNumber > 0) {
+            moveCanSat( flightData.getPosition(currentFrameNumber) )
+        }
+    }, [ flightData, currentAppMode, currentFrameNumber, isRunning ])
 
     useEffect(() => {
         const handleFullscreenChange = () => {

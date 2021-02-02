@@ -5,7 +5,7 @@ import {XYPlot, XAxis, YAxis, HorizontalGridLines, LineSeries, LineSeriesPoint }
 import { useGlobalState } from "../globalState"
 import { currentFrameNumberState, flightDataState } from ".."
 import { SettingsOption, UtilityWindow } from "../UtilityWindow/UtilityWindow"
-import { SimData, StationData } from "../flightProperties"
+import { FlightData } from "../flightProperties"
 
 export const Properties = [
     "Position x",
@@ -19,6 +19,7 @@ export const Properties = [
     "Acceleration z",
     "Pressure",
     "Temperature",
+    "Heading",
     "Time"
 ] as const
 
@@ -59,7 +60,7 @@ export const Graph:FC<props> = ({removeUtility, openInNewWindow, bigWindow}) => 
     }, [axisXProperty, axisYProperty])
 
     useEffect(() => {
-        if(currentFrameNumber === undefined || currentFrameNumber === -1) {
+        if(currentFrameNumber === -1) {
             data.current = []
         }
         else {        
@@ -113,7 +114,7 @@ export const Graph:FC<props> = ({removeUtility, openInNewWindow, bigWindow}) => 
 }
 
 
-function pickProperties(data: SimData | StationData, p: Property, i: number): number {
+function pickProperties(data: FlightData, p: Property, i: number): number {
     switch(p) {
         case "Position x":
             return data.getPosition(i).x
@@ -139,6 +140,8 @@ function pickProperties(data: SimData | StationData, p: Property, i: number): nu
             return data.getTemperature(i)
         case "Time":
             return data.getTime(i)
+        case "Heading":
+            return data.getHeading(i)
         default:
             return 0
     }        

@@ -24,9 +24,8 @@ declare global {
       currentAppModeState: GlobalState<AppMode>
       flightDataState: GlobalState<FlightData>
       isRunningState: GlobalState<boolean>
-      currentFrameNumberState: GlobalState<number | undefined>
+      currentFrameNumberState: GlobalState<number>
       isPausedState: GlobalState<boolean>
-      serialWriterState: GlobalState<WritableStreamDefaultWriter | undefined>
       simMetaDataState: GlobalState<SimMetaData>
     }    
     defaultUtilities: Utility[]
@@ -37,10 +36,9 @@ if(window.opener === null) {
   window.sharedState = {
     currentAppModeState: new GlobalState<AppMode>("Simulator"),
     isRunningState: new GlobalState<boolean>(false),
-    currentFrameNumberState: new GlobalState<number | undefined>(undefined),
+    currentFrameNumberState: new GlobalState<number>(-1),
     isPausedState: new GlobalState<boolean>(false),
     flightDataState: new GlobalState<FlightData>(new FlightData()),
-    serialWriterState: new GlobalState<WritableStreamDefaultWriter | undefined>(undefined),
     simMetaDataState: new GlobalState<SimMetaData>(new SimMetaData())
   }
   window.defaultUtilities = ["Visualizer", "Data table", "Graph", "Message sender"]
@@ -49,7 +47,7 @@ else {
   window.sharedState = (window.opener as Window).sharedState
 } 
 
-export const {currentAppModeState, isRunningState, currentFrameNumberState, isPausedState, flightDataState, serialWriterState, simMetaDataState} = window.sharedState
+export const {currentAppModeState, isRunningState, currentFrameNumberState, isPausedState, flightDataState, simMetaDataState} = window.sharedState
 
 
 ReactDOM.render(
