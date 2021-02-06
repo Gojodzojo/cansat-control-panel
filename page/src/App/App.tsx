@@ -3,7 +3,7 @@ import { TopBar } from "../TopBar/TopBar"
 import { DataTable } from "../DataTable/DataTable"
 import { UnityVisualiser } from "../UnityVisualizer/UnityVisualiser"
 import { Graph } from "../Graph/Graph"
-import { Utility } from ".."
+import { Utility } from "../index"
 import { v4 } from 'uuid'
 import { SerialDialog } from '../SerialDialog/SerialDialog'
 import { MessageSender } from '../MessageSender/MessageSender'

@@ -1,6 +1,6 @@
 import { TableBody, TableCell, TableRow } from "@material-ui/core"
 import React from "react"
-import { currentFrameNumberState, flightDataState } from ".."
+import { currentFrameNumberState, flightDataState } from "../index"
 import { useGlobalState } from "../globalState"
 import { TableEntry } from "./DataTable"
 

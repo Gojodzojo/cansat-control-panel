@@ -1,6 +1,6 @@
 import { Switch, TableBody, TableCell, TableRow, TextField } from "@material-ui/core"
 import React, { useEffect, useRef, useState } from "react"
-import { simMetaDataState } from ".."
+import { simMetaDataState } from "../index"
 import { useGlobalState } from "../globalState"
 import { getPosition, getWeather } from "./weather&pos"
 import { TableEntry } from "./DataTable"
@@ -12,7 +12,7 @@ export const InputTable = () => {
     const lastLongitude = useRef(0)
     const lastLatitude = useRef(0)    
 
-    const { initialLatitude, initialLongitude, initialHeight, canSatMass, canSatSurfaceArea, airCS, windAzimuth, windSpeed } = simMetaData
+    const { initialLatitude, initialLongitude, initialHeight, canSatMass, canSatSurfaceArea, airCS, windAzimuth, windSpeed, environmentSimulationInterval, satelliteSimulationInterval } = simMetaData
     
     useEffect(() => {
         (async () => {
@@ -137,6 +137,26 @@ export const InputTable = () => {
                 onChange={e => setSimMetaData({windAzimuth: parseFloat(e.target.value)})}
                 disabled={automaticWeather}
                 placeholder="Wind azimuth"
+            />,
+            unit: "°"
+        },
+        {
+            rowName: "Environment simulation interval",
+            value: <TextField
+                type="number"
+                value={environmentSimulationInterval}
+                onChange={e => setSimMetaData({environmentSimulationInterval: parseFloat(e.target.value)})}
+                placeholder="Environment simulation interval"
+            />,
+            unit: "ms"
+        },
+        {
+            rowName: "Satellite simulation",
+            value: <TextField
+                type="number"
+                value={satelliteSimulationInterval}
+                onChange={e => setSimMetaData({satelliteSimulationInterval: parseFloat(e.target.value)})}
+                placeholder="Satellite simulation"
             />,
             unit: "°"
         }

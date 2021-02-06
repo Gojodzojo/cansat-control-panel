@@ -1,9 +1,9 @@
 import { Button, Input, TableCell, TableRow } from "@material-ui/core"
 import React, { FC, useState } from "react"
-import { flightDataState } from ".."
+import { flightDataState } from "../index"
 import { sendMessage } from "../CSCP"
 import { useGlobalState } from "../globalState"
-import { PositionMessageFrame } from "../flightProperties"
+import { FlightDataMessageFrame, PositionMessageFrame } from "../flightProperties"
 
 export const PositionSection: FC = () => {
     const [flightData, setFlightData] = useGlobalState(flightDataState)
@@ -12,8 +12,8 @@ export const PositionSection: FC = () => {
 
     const handleSend = () => {
         const message = new PositionMessageFrame(longitude, latitude)
-        sendMessage(message.toBytes())
-        setFlightData({orders: [...flightData.orders, message]})
+        sendMessage(message)
+        setFlightData({messageFrames: [...flightData.messageFrames, new FlightDataMessageFrame(message)]})
     } 
 
     return (

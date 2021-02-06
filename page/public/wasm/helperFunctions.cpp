@@ -1,10 +1,13 @@
-#ifndef __INTELLISENSE__
 #include <emscripten.h>
-#endif
 #include <cstdint>
+#include <string>
+#include <iostream>
 #include "DataFrames.h"
 
-void transmit(DataFrame *df) {
+#define String std::to_string
+#define substring substr
+
+void radio_transmit(DataFrame *df) {
     EM_ASM({
         postMessage({
             heading: $0,
@@ -20,21 +23,15 @@ void transmit(DataFrame *df) {
     }, df->heading, df->pressure, df->temperature, df->latitude, df->longitude, df->time, df->height, (MessageCode)(df->messageCode));
 }
 
-int getTemperature() {
-    return EM_ASM_INT({        
-        return getTemperature();
-    });    
-}
-
 int getPressure() {
     return EM_ASM_INT({        
         return getPressure();
     });    
 }
 
-int milis() {
+int millis() {
     return EM_ASM_INT({        
-        return milis();
+        return millis();
     });    
 }
 
@@ -42,4 +39,23 @@ int getHeading() {
     return EM_ASM_INT({        
         return heading;
     });    
+}
+
+unsigned int radio_available() {
+    return EM_ASM_INT({
+        return radio_available();
+    });
+}
+
+void SerialUSB_println(std::string text)
+{
+    emscripten_run_script( (std::string("console.log('") + text + "')").c_str() );
+}
+
+void radio_receive(uint8_t temp[], unsigned int avaliableBytes) {
+    for(int i = 0; i < avaliableBytes; i++) {
+        temp[i] = EM_ASM_INT({
+            return messageBytes.shift();
+        });        
+    }       
 }

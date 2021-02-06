@@ -1,8 +1,8 @@
 import { Button, Input, TableCell, TableRow } from "@material-ui/core"
 import React, { FC, useMemo, useState } from "react"
-import { flightDataState } from ".."
+import { flightDataState } from "../index"
 import { sendMessage } from "../CSCP"
-import { AzimuthMessageFrame } from "../flightProperties"
+import { AzimuthMessageFrame, FlightDataMessageFrame } from "../flightProperties"
 import { useGlobalState } from "../globalState"
 
 export const AzimuthSection: FC = () => {
@@ -11,8 +11,8 @@ export const AzimuthSection: FC = () => {
 
     const handleSend = () => {
         const message = new AzimuthMessageFrame(azimuth)
-        sendMessage(message.toBytes())
-        setFlightData({orders: [...flightData.orders, message]})
+        sendMessage(message)
+        setFlightData({messageFrames: [...flightData.messageFrames, new FlightDataMessageFrame(message)]})
     }
 
     return (

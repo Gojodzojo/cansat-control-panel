@@ -3,7 +3,7 @@ import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 're
 import {XYPlot, XAxis, YAxis, HorizontalGridLines, LineSeries, LineSeriesPoint } from 'react-vis'
 //import { getAcceleration, getCanSatPosition, getPressure, getTemperature, getTime, getVelocity, SimMetaData, StationMetaData } from "../flightProperties"
 import { useGlobalState } from "../globalState"
-import { currentFrameNumberState, flightDataState } from ".."
+import { currentFrameNumberState, flightDataState } from "../index"
 import { SettingsOption, UtilityWindow } from "../UtilityWindow/UtilityWindow"
 import { FlightData } from "../flightProperties"
 

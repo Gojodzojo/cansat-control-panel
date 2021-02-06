@@ -1,4 +1,5 @@
-import { currentAppModeState, currentFrameNumberState, flightDataState, isPausedState, isRunningState } from ".";
+import { MessageFrame } from "./flightProperties";
+import { currentAppModeState, currentFrameNumberState, flightDataState, isPausedState, isRunningState } from "./index";
 import { sendSimulatorMessage, startSimulator, stopSimulation } from "./watchForSimulatorData";
 import { sendStationMessage, startStation, stopStation } from "./watchForStationData";
 
@@ -39,11 +40,11 @@ export async function stop() {
     flightDataState.setValue({frames: []})
 }
 
-export async function sendMessage(messageBytes: Uint8Array) {
+export async function sendMessage(messageFrame: MessageFrame) {
     if(currentAppModeState.getValue() === "Station") {
-        sendStationMessage(messageBytes)
+        sendStationMessage(messageFrame)
     }
     else {
-        sendSimulatorMessage(messageBytes)
+        sendSimulatorMessage(messageFrame)
     }
 }

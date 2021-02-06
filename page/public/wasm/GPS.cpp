@@ -1,9 +1,6 @@
 #ifndef GPS_H
 #define GPS_H
-
-#ifndef __INTELLISENSE__
 #include <emscripten.h>
-#endif
 
 class GPS {
   public:
@@ -14,8 +11,7 @@ class GPS {
   void readData() {
     latitude = EM_ASM_DOUBLE({ return getLatitude() }) * 10000000;
     longitude = EM_ASM_DOUBLE({ return getLongitude() }) * 10000000;
-    altitude = EM_ASM_DOUBLE({ return position._y });
+    altitude = EM_ASM_INT({ return Math.floor(position._y) });
   }
-  
 };
 #endif

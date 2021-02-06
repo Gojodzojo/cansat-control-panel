@@ -5,7 +5,6 @@ import { App } from './App/App'
 import { GlobalState } from './globalState'
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import { FlightData, SimMetaData } from "./flightProperties"
-//import { AdditionalApp } from "./AdditionalApp/AdditionalApp"
 
 export const AppModes = ["Simulator", "Station", "Player"] as const
 export type AppMode = typeof AppModes[number]

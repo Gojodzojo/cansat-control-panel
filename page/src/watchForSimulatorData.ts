@@ -1,5 +1,5 @@
-import { currentFrameNumberState, isPausedState, isRunningState, flightDataState, simMetaDataState } from "."
-import { DataFrame, SimMetaData } from "./flightProperties"
+import { currentFrameNumberState, flightDataState, simMetaDataState } from "./index"
+import { DataFrame, MessageFrame, SimMetaData } from "./flightProperties"
 
 export type MessageData = {
     action: "start"
@@ -14,9 +14,8 @@ export type MessageData = {
 const worker = new Worker("./simulationWorker.js")
 
 function readData({ data }: MessageEvent<DataFrame>) {
-    console.log(data)
-    const { frames } = flightDataState.getValue()
-    frames.push(data)
+    const { frames } = flightDataState.getValue()    
+    frames.push(data)    
     currentFrameNumberState.setValue(frames.length - 1)
 }
 
@@ -35,6 +34,6 @@ export function stopSimulation() {
     worker.removeEventListener("message", readData)    
 }
 
-export function sendSimulatorMessage(messageBytes: Uint8Array) {
-    worker.postMessage({ action: "message", messageBytes } as MessageData)
+export function sendSimulatorMessage(messageFrame: MessageFrame) {
+    worker.postMessage({ action: "message", messageBytes: messageFrame.toBytes() } as MessageData)
 }

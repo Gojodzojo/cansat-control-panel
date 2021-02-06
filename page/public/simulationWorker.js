@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 importScripts("wasm/a.out.js")
 wasmBinaryFile = "wasm/a.out.wasm"
 
@@ -10,42 +9,75 @@ class Vector {
     }    
 
     addVector(v, deltaTime) {
-        this._x += v._x / deltaTime
-        this._y += v._y / deltaTime
-        this._z += v._z / deltaTime
+        const secondFraction = deltaTime / 1000
+        this._x += v._x * secondFraction
+        this._y += v._y * secondFraction
+        this._z += v._z * secondFraction
+    }
+
+    multiplyByScalar(s) {
+        this._x *= s
+        this._y *= s
+        this._z *= s
     }
 }
 
-let intervals = []
-let simMetaData, leftEngineState, rightEngineState, heading, position, windForce, acceleration, velocity, startTime
+let interval
+let simMetaData, leftEngineState, rightEngineState, heading, position, acceleration, velocity, startTime, simLoopNumber, messageBytes = []
+
+const airDensity = 1.225
+const gravityForceVal = 9.80665
 
 onmessage = function({ data }) {
 
-    if(data.action === "start") {        // Set simulation parameters and start simulation loop
+    if(data.action === "start") {      // Set simulation parameters and start simulation loop
         simMetaData = data.simMetaData
-        position = new Vector(0, 10, 0)
-        velocity = new Vector(0, 0, 0)
-        acceleration = new Vector(0, 0, 0)
-        windForce = new Vector(0, 0, 0)
+        const { windAzimuth, canSatSurfaceArea, windSpeed, canSatMass, initialHeight } = simMetaData        
+        
         startTime = Date.now()
-        intervals[0] = setInterval(environmentSimulation, 10)
-        intervals[1] = setInterval(satelliteSimulation, 1000)
+
+        const rad = windAzimuth * (Math.PI / 180)
+        const windAcceleration = new Vector( Math.cos(rad) * -1, 0, Math.sin(rad) * -1 )        
+        if (windAzimuth <= 180) {
+            windAcceleration.multiplyByScalar(-1)
+        }
+        
+        /* https://www.engineeringtoolbox.com/wind-load-d_1775.html */
+        const windForceVal = 0.5 * canSatSurfaceArea * airDensity * Math.pow(windSpeed, 2);
+        windAcceleration.multiplyByScalar(windForceVal);
+        windAcceleration.multiplyByScalar(1 / canSatMass);
+        
+        acceleration = windAcceleration;
+        acceleration._y = gravityForceVal * -1;        
+        
+        velocity = new Vector(0, 0, 0)
+        position = new Vector(0, initialHeight, 0)
+        simLoopNumber = simMetaData.satelliteSimulationInterval / simMetaData.environmentSimulationInterval
+        
+        interval = setInterval(environmentSimulation, simMetaData.environmentSimulationInterval)        
     }
     // Stop simulation loop
     else if(data.action === "stop") {
-        intervals.forEach(clearInterval)        
+        clearInterval(interval)
     }
     else if(data.action === "message") {
-
+        messageBytes = [ ...data.messageBytes ]
     }
 }
 
 function environmentSimulation() {
+    if (simMetaData.satelliteSimulationInterval / simMetaData.environmentSimulationInterval <= simLoopNumber) {
+        Module._loop();
+        simLoopNumber = 0
+    }
+    simLoopNumber++
 
-}
+    velocity.addVector(acceleration, simMetaData.environmentSimulationInterval)
+    position.addVector(velocity, simMetaData.environmentSimulationInterval)    
 
-function satelliteSimulation() {
-    Module._loop();
+    // https://cnx.org/contents/TqqPA4io@2.43:olSre6jy@4/6-4-Si%C5%82a-oporu-i-pr%C4%99dko%C5%9B%C4%87-graniczna
+    const dragForceVal = 0.5 * airDensity * simMetaData.airCS * Math.pow(velocity._y, 2)
+    acceleration._y = dragForceVal - gravityForceVal      
 }
 
 const earthRadius = 6371e3
@@ -68,6 +100,11 @@ function getLongitude() {
     return simMetaData.initialLatitude + position._z * degPerMeter
 }
 
-function milis() {
+function millis() {
     return Date.now() - startTime
 }
+
+function radio_available() {
+    return messageBytes.length   
+}
+

@@ -1,60 +1,74 @@
-import { DataFrame } from "./flightProperties"
+import { currentFrameNumberState, flightDataState } from "."
+import { DataFrame, MessageFrame } from "./flightProperties"
 
 function newJsonDecoder(){
     return new TransformStream<string, any>({
         start(controller: any) {
             controller.buf = ''
-            controller.pos = 0
         },
-        transform(chunk: any, controller: any) {
-            console.log(chunk) 
+        transform(chunk: any, controller: any) {                                  
+            if(controller.buf[0] === "{" || chunk[0] === "{") {
+                controller.buf += chunk
+                if(controller.buf.charAt(controller.buf.length - 1) === "}") {
+                    controller.enqueue(JSON.parse(controller.buf))
+                    controller.buf = ""
+                }
+            }
         }
     })
 }
 
 function makeWriteableEventStream(eventTarget: EventTarget) {
     return new WritableStream({
-        start(controller: any) {
-            eventTarget.dispatchEvent(new Event('start'))
+        start() {
+            eventTarget.dispatchEvent( new Event('start') )
         },
-        write(dataFrame: DataFrame, controller: any) {
-            eventTarget.dispatchEvent( new MessageEvent("data", { data: dataFrame }) )
+        write(data: DataFrame) {
+            eventTarget.dispatchEvent( new MessageEvent("data", { data }) )
         },
         close() {
-            eventTarget.dispatchEvent(new CloseEvent('close'))
+            eventTarget.dispatchEvent( new CloseEvent('close') )
         },
         abort(reason: string) {
-            eventTarget.dispatchEvent(new CloseEvent('abort', { reason }))
+            eventTarget.dispatchEvent( new CloseEvent('abort', { reason }) )
         }
     })
 }
 
+function readData({ data }: MessageEvent<DataFrame>) {
+    const { frames } = flightDataState.getValue()
+    data.time /= 1000
+    frames.push(data)    
+    currentFrameNumberState.setValue(frames.length - 1)
+}
+
 export let stopStation = async () => console.error("Error in watchForStationData.ts")
-export let sendStationMessage = async (messageBytes: Uint8Array) => console.error("Error in watchForStationData.ts")
+export let sendStationMessage = async (messageFrame: MessageFrame) => console.error("Error in watchForStationData.ts")
 
 export async function startStation(device: any) {
     const eventTarget = new EventTarget()
     const writableEventStream = makeWriteableEventStream(eventTarget)
-    const controller = new AbortController()
     
     await device.open({ baudRate: 115200 })
     const writer = (device.writable as WritableStream<Uint8Array>).getWriter()
     const readableStreamClosed = (device.readable as ReadableStream)
         .pipeThrough(new TextDecoderStream())
         .pipeThrough<DataFrame>(newJsonDecoder())
-        .pipeTo(writableEventStream, {preventAbort: false, preventCancel: false, preventClose: false, signal: controller.signal})
+        .pipeTo(writableEventStream)
+
+    eventTarget.addEventListener("data", readData as any)
 
     stopStation = async () => {
-        controller.abort()
+        eventTarget.removeEventListener("data", readData as any)
+        writableEventStream.getWriter().releaseLock()
+        writableEventStream.abort()
         await readableStreamClosed.catch(() => { /* Ignore the error */ })
         writer.releaseLock()      
-        console.log(device.writable.locked)  
-        console.log(device.readable.locked)  
         await device.close()
     }
 
-    sendStationMessage = async (messageBytes: Uint8Array) => {
-        await writer.write(messageBytes)
+    sendStationMessage = async (messageFrame: MessageFrame) => {
+        await writer.write(messageFrame.toBytes())
     }
 }
 

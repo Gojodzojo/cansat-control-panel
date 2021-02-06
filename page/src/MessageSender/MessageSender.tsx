@@ -2,10 +2,11 @@ import { Paper, Table, TableBody, TableCell, TableContainer, TableRow } from "@m
 import React, { FC } from "react"
 import { useGlobalState } from "../globalState"
 import { UtilityWindow } from "../UtilityWindow/UtilityWindow"
-import { isRunningState } from ".."
-import { EmergencySection } from "./EmergencySection"
+import { isRunningState } from "../index"
+import { ShortMessageSection } from "./ShortMessageSection"
 import { PositionSection } from "./PositionSection"
 import { AzimuthSection } from "./AzimuthSection"
+import { MessageCode } from "../flightProperties"
 
 interface props {
     removeUtility: () => void
@@ -28,9 +29,11 @@ export const MessageSender: FC<props> = ({removeUtility, openInNewWindow, bigWin
                         <TableBody>
                             {isRunning?
                                 <>
-                                    <EmergencySection />
                                     <PositionSection />
                                     <AzimuthSection />
+                                    <ShortMessageSection buttonText="Send emergency message" messageCode={MessageCode.emergency} />
+                                    <ShortMessageSection buttonText="Send calibration message" messageCode={MessageCode.calibration} />
+                                    <ShortMessageSection buttonText="Send wait message" messageCode={MessageCode.wait} />
                                 </>
                                 :
                                 <TableRow>

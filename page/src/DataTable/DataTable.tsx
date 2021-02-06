@@ -4,7 +4,7 @@ import React, { FC, useMemo} from "react"
 import { OutputTable } from "./OutputTable"
 import { InputTable } from "./InputTable"
 import { useGlobalState } from "../globalState"
-import { currentAppModeState, isRunningState } from ".."
+import { currentAppModeState, isRunningState } from "../index"
 import { SettingsOption, UtilityWindow } from "../UtilityWindow/UtilityWindow"
 
 export interface TableEntry {

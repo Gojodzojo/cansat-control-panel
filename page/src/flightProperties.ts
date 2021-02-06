@@ -4,7 +4,7 @@ export interface Vector {
     z: number
 }
 
-enum MessageCode {
+export enum MessageCode {
     error = -1,
     nothing = 0,
     position = 1,
@@ -15,7 +15,9 @@ enum MessageCode {
 };
 
 export class MessageFrame {
-    readonly messageCode: MessageCode = MessageCode.nothing
+    constructor(
+        readonly messageCode: MessageCode
+    ){}
     
     toBytes() {
         return new Uint8Array( new Int8Array([ this.messageCode ]).buffer )
@@ -23,12 +25,10 @@ export class MessageFrame {
 }
 
 export class PositionMessageFrame extends MessageFrame {
-    readonly messageCode = MessageCode.position
-
     constructor(
         public longitude: number,
         public latitude: number,        
-    ){ super() }
+    ){ super(MessageCode.position) }
 
     toBytes() {
         return new Uint8Array([
@@ -36,28 +36,30 @@ export class PositionMessageFrame extends MessageFrame {
             ...new Uint8Array( new Int32Array([
                 this.longitude * Math.pow(10, 6),
                 this.latitude * Math.pow(10, 6)
-            ]).buffer)
+            ]).buffer )
         ])
     }
 }
 
 export class AzimuthMessageFrame extends MessageFrame {
-    readonly messageCode = MessageCode.azimuth
-    
     constructor(
-        public newAzimuth: number,        
-    ){ super() }
+        public azimuth: number,        
+    ){ super(MessageCode.azimuth) }
 
-    toBytes() {
+    toBytes() {        
         return new Uint8Array([
             ...new Uint8Array( new Int8Array([ this.messageCode ]).buffer ),
-            ...new Uint8Array( new Int32Array([ this.newAzimuth ]).buffer )
+            ...new Uint8Array( new Int32Array([ this.azimuth ]).buffer )
         ])
     }
 }
 
-export class EmergencyMessageFrame extends MessageFrame {
-    readonly messageCode: MessageCode = MessageCode.emergency        
+export class FlightDataMessageFrame {
+    delivered = false
+
+    constructor(
+        public messageFrame: MessageFrame
+    ){}
 }
 
 export class SimMetaData {    
@@ -72,6 +74,8 @@ export class SimMetaData {
         public airCS: number = 0.3,
         public windSpeed: number = 2,
         public windAzimuth: number = 2,
+        public environmentSimulationInterval: number = 10,
+        public satelliteSimulationInterval: number = 1000
     ){}    
 }
 
@@ -90,7 +94,7 @@ export interface DataFrame {
 export class FlightData {
     constructor(
         public frames: DataFrame[] = [],
-        public orders: MessageFrame[] = []
+        public messageFrames: FlightDataMessageFrame[] = []
     ){} 
     
     getPosition(i: number): Vector {        
@@ -117,7 +121,7 @@ export class FlightData {
     
     getAcceleration(i: number): Vector {
         if(i < 2) {
-            return {x: 0, y: 0, z: 0}
+            return {x: 0, y: -10, z: 0}
         }
         const deltaTime = this.getTime(i) - this.getTime(i - 1)
         const currentVel = this.getVelocity(i)

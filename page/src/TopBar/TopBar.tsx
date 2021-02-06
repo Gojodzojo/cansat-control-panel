@@ -1,9 +1,9 @@
 import "./TopBar.scss"
-import React, { FC, useEffect, useState } from "react"
+import React, { FC, useState } from "react"
 import { AppBar, Button, IconButton, Toolbar } from "@material-ui/core"
 import menuIcon from "./menuIcon.svg"
 import { useGlobalState } from "../globalState"
-import { currentAppModeState, isPausedState, isRunningState, Utility } from ".."
+import { currentAppModeState, isPausedState, isRunningState, Utility } from "../index"
 import { SideDrawer } from "./SideDrawer"
 import { UtilitiesOpener } from "./UtilitiesOpener"
 import pauseIcon from "./pauseIcon.svg"
@@ -51,7 +51,7 @@ export const TopBar: FC<props> = ({addUtility}) => {
                 <UtilitiesOpener addUtility={addUtility} />
                 {isRunning &&
                     <IconButton onClick={() => setIsPaused(!isPaused, true)}>
-                        <img src={isPaused? playIcon : pauseIcon} />
+                        <img src={isPaused? playIcon : pauseIcon} alt="play/pause" />
                     </IconButton>
                 }                
                 {currentAppMode === "Station" &&
