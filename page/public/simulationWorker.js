@@ -22,6 +22,14 @@ class Vector {
     }
 }
 
+function getCheckSum(byteArray) {    
+    let checkSum = byteArray[0];
+    for(let i = 1; i < byteArray.length; i++) {
+        checkSum ^= byteArray[i]
+    }
+    return checkSum
+}
+
 let interval
 let simMetaData, leftEngineState, rightEngineState, heading, position, acceleration, velocity, startTime, simLoopNumber, messageBytes = []
 
@@ -61,7 +69,13 @@ onmessage = function({ data }) {
         clearInterval(interval)
     }
     else if(data.action === "message") {
-        messageBytes = [ ...data.messageBytes ]
+        messageBytes = [
+            65,
+            84,
+            ...data.messageBytes,
+            getCheckSum(data.messageBytes),
+            59
+        ]
     }
 }
 
