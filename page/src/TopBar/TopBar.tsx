@@ -1,41 +1,42 @@
 import "./TopBar.scss"
-import React, { FC, useEffect, useState } from "react"
+import React, { FC, useState } from "react"
 import { AppBar, Button, IconButton, Toolbar } from "@material-ui/core"
 import menuIcon from "./menuIcon.svg"
-import { simulate } from "../simulate"
 import { useGlobalState } from "../globalState"
-import { currentAppModeState, flightDataState, isPausedState, isRunningState, Utility } from ".."
+import { currentAppModeState, isPausedState, isRunningState, Utility } from "../index"
 import { SideDrawer } from "./SideDrawer"
 import { UtilitiesOpener } from "./UtilitiesOpener"
 import pauseIcon from "./pauseIcon.svg"
 import playIcon from "./playIcon.svg"
-import { watchForData } from "../watchForData"
+import { start, stop } from "../CSCP"
 
 interface props {
     addUtility: (u: Utility) => void
 }
 
 export const TopBar: FC<props> = ({addUtility}) => {
-    const [isRunning, setIsRunning] = useGlobalState(isRunningState)
-    const [isPaused, setIsPaused] = useGlobalState(isPausedState)
-    const [flightData] = useGlobalState(flightDataState)
+    const [isRunning] = useGlobalState(isRunningState)
+    const [isPaused, setIsPaused] = useGlobalState(isPausedState)    
     const [currentAppMode] = useGlobalState(currentAppModeState)
     const [isDrawerOpened, setIsDrawerOpened] = useState(true)
     const [device, setDevice] = useState<any | undefined>(undefined)
 
-    useEffect(() => {
-        if(isRunning) {            
-            if("date" in flightData && currentAppMode === "Station") {
-                watchForData(device)
+    const startStop = () => {
+        if(!isRunning) {            
+            if(currentAppMode === "Station") {
+                start(device)
             }
-            else if("frameRate" in flightData && currentAppMode === "Simulator") {
-                simulate()
+            else if(currentAppMode === "Simulator") {
+                start()
             }
             else {
                 console.log("TopBar error")
             }
-        }        
-    }, [isRunning])    
+        }
+        else {
+            stop()
+        }  
+    }    
 
     const handleDeviceSelect = async () => {
         setDevice(await (navigator as any).serial.requestPort())
@@ -50,7 +51,7 @@ export const TopBar: FC<props> = ({addUtility}) => {
                 <UtilitiesOpener addUtility={addUtility} />
                 {isRunning &&
                     <IconButton onClick={() => setIsPaused(!isPaused, true)}>
-                        <img src={isPaused? playIcon : pauseIcon} />
+                        <img src={isPaused? playIcon : pauseIcon} alt="play/pause" />
                     </IconButton>
                 }                
                 {currentAppMode === "Station" &&
@@ -67,7 +68,7 @@ export const TopBar: FC<props> = ({addUtility}) => {
                     variant="contained"
                     size="medium"
                     className="Button"
-                    onClick={() => setIsRunning(!isRunning)}
+                    onClick={startStop}
                     disabled={currentAppMode === "Station" && device === undefined}
                 >
                     { isRunning? "Stop" : "Run" }

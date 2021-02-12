@@ -1,6 +1,6 @@
 import { IconButton, Menu, MenuItem } from "@material-ui/core"
 import React, { FC, useMemo, useRef, useState } from "react"
-import { Utilities, Utility } from ".."
+import { Utilities, Utility } from "../index"
 import dropDownIcon from "./dropDownIcon.svg"
 
 interface props {

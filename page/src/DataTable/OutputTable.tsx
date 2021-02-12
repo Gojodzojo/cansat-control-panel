@@ -1,6 +1,6 @@
 import { TableBody, TableCell, TableRow } from "@material-ui/core"
 import React from "react"
-import { currentFrameNumberState, flightDataState } from ".."
+import { currentFrameNumberState, flightDataState } from "../index"
 import { useGlobalState } from "../globalState"
 import { TableEntry } from "./DataTable"
 
@@ -9,7 +9,7 @@ export const OutputTable = () => {
     const [currentFrameNumber] = useGlobalState(currentFrameNumberState)
 
     let data: TableEntry[] = []
-    if(currentFrameNumber === undefined || currentFrameNumber === -1) {
+    if(currentFrameNumber === -1) {
         data = []
     }
     else {
@@ -34,8 +34,8 @@ export const OutputTable = () => {
                 unit: "°"
             },
             {
-                rowName: "Azimuth",
-                value: flightData.getAzimuth(currentFrameNumber),
+                rowName: "Heading",
+                value: flightData.getHeading(currentFrameNumber),
                 unit: "°"
             },
             {
