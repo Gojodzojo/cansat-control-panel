@@ -7,6 +7,7 @@ import { Utility } from "../index"
 import { v4 } from 'uuid'
 import { SerialDialog } from '../SerialDialog/SerialDialog'
 import { MessageSender } from '../MessageSender/MessageSender'
+import { MessagesList } from '../MessagesList/MessagesList'
 
 interface UtilityWithID {
   utilityName: Utility,
@@ -42,7 +43,8 @@ export const App: FC<props> = ({defautlUtilities}) => {
     else if(utilityName === "Visualizer")     return <UnityVisualiser {...props}/>
     else if(utilityName === "Graph")          return <Graph {...props} />
     else if(utilityName === "Message sender") return <MessageSender {...props} />
-                                              return <div> utilitiesError </div> 
+    else if(utilityName === "Messages list")  return <MessagesList {...props} />
+    return <div> utilitiesError </div> 
   }), [openedUtilities])
 
   useEffect(() => {

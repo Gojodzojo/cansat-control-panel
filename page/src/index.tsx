@@ -13,7 +13,8 @@ export const Utilities = [
   "Visualizer",
   "Graph",
   "Data table",
-  "Message sender"
+  "Message sender",
+  "Messages list"
 ] as const
 export type Utility = typeof Utilities[number]
 
@@ -40,7 +41,7 @@ if(window.opener === null) {
     flightDataState: new GlobalState<FlightData>(new FlightData()),
     simMetaDataState: new GlobalState<SimMetaData>(new SimMetaData())
   }
-  window.defaultUtilities = ["Visualizer", "Data table", "Graph", "Message sender"]
+  window.defaultUtilities = ["Data table", "Graph", "Message sender", "Messages list"]
 }
 else {  
   window.sharedState = (window.opener as Window).sharedState

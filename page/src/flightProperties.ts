@@ -55,7 +55,7 @@ export class AzimuthMessageFrame extends MessageFrame {
 }
 
 export class FlightDataMessageFrame {
-    delivered = false
+    state: "Delivered" | "Not delivered" | "Error" = "Not delivered"
 
     constructor(
         public messageFrame: MessageFrame

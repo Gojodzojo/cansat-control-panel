@@ -1,5 +1,5 @@
 import { Button, Input, TableCell, TableRow } from "@material-ui/core"
-import React, { FC, useMemo, useState } from "react"
+import React, { FC, useState } from "react"
 import { flightDataState } from "../index"
 import { sendMessage } from "../CSCP"
 import { AzimuthMessageFrame, FlightDataMessageFrame } from "../flightProperties"
