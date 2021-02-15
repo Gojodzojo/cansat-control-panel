@@ -6,7 +6,13 @@
     overflow-y: scroll;
 
     &::-webkit-scrollbar {
-        width: 0px;
+        width: 4px;
+        border-radius: 2px;
+    }        
+
+    &::-webkit-scrollbar-thumb {
+        background-color: #2196F3;
+        border-radius: 2px;
     }
 
     .UtilitySettingsButton {    

@@ -14,7 +14,7 @@ interface props {
     bigWindow: boolean
 }
 
-export const MessageSender: FC<props> = ({removeUtility, openInNewWindow, bigWindow}) => {
+export const MessageSender: FC<props> = ({ removeUtility, openInNewWindow, bigWindow }) => {
     const [isRunning] = useGlobalState(isRunningState)        
 
     return(

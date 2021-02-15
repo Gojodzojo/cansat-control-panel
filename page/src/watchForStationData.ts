@@ -1,5 +1,5 @@
 import { currentFrameNumberState, flightDataState } from "."
-import { DataFrame, MessageFrame } from "./flightProperties"
+import { DataFrame, MessageCode, MessageFrame } from "./flightProperties"
 
 export let stopStation = async () => console.error("Error in watchForStationData.ts")
 export let sendStationMessage = async (messageFrame: MessageFrame) => console.error("Error in watchForStationData.ts")
@@ -9,8 +9,7 @@ export async function startStation(device: any) {
     const writer = (device.writable as WritableStream<Uint8Array>).getWriter()
     const textDecoder = new TextDecoderStream()
     const readableStreamClosed = device.readable.pipeTo(textDecoder.writable)
-    const reader = textDecoder.readable.getReader();
-    const { frames } = flightDataState.getValue()
+    const reader = textDecoder.readable.getReader();    
     let jsonString = "", isRunning = true
 
     stopStation = async () => {
@@ -34,8 +33,22 @@ export async function startStation(device: any) {
         jsonString += value                
         if(jsonString.charAt(jsonString.length - 1) === "}") {
             try {
+                const { frames, messageFrames } = flightDataState.getValue()
                 const result: DataFrame = JSON.parse(jsonString)
                 result.time /= 1000
+                if(result.messageCode !== MessageCode.nothing) {
+                    if(result.messageCode === MessageCode.error) {
+                        messageFrames[messageFrames.length - 1].state = "Error"
+                    }
+                    else {
+                        for(let i = messageFrames.length - 1; i >= 0; i--) {
+                            if(messageFrames[i].messageFrame.messageCode === result.messageCode) {
+                                messageFrames[i].state = "Delivered"
+                                break
+                            }
+                        }
+                    }        
+                }
                 frames.push(result)
                 currentFrameNumberState.setValue(frames.length - 1)
             }

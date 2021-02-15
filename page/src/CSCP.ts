@@ -37,7 +37,7 @@ export async function stop() {
 
     isRunningState.setValue(false)
     currentFrameNumberState.setValue(-1)
-    flightDataState.setValue({frames: []})
+    flightDataState.setValue({frames: [], messageFrames: []})
 }
 
 export async function sendMessage(messageFrame: MessageFrame) {
