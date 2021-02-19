@@ -12,7 +12,20 @@ export const InputTable = () => {
     const lastLongitude = useRef(0)
     const lastLatitude = useRef(0)    
 
-    const { initialLatitude, initialLongitude, initialHeight, canSatMass, canSatSurfaceArea, airCS, windAzimuth, windSpeed, environmentSimulationInterval, satelliteSimulationInterval } = simMetaData
+    const {
+        initialLatitude,
+        initialLongitude,
+        initialHeight,
+        canSatMass,
+        canSatSurfaceArea,
+        airCS,
+        windAzimuth,
+        windSpeed,
+        environmentSimulationInterval,
+        satelliteSimulationInterval,
+        forwardAccelerationVal,
+        angularVelocity
+    } = simMetaData
     
     useEffect(() => {
         (async () => {
@@ -151,14 +164,34 @@ export const InputTable = () => {
             unit: "ms"
         },
         {
-            rowName: "Satellite simulation",
+            rowName: "Satellite simulation interval",
             value: <TextField
                 type="number"
                 value={satelliteSimulationInterval}
                 onChange={e => setSimMetaData({satelliteSimulationInterval: parseFloat(e.target.value)})}
                 placeholder="Satellite simulation"
             />,
-            unit: "°"
+            unit: "ms"
+        },
+        {
+            rowName: "Forward acceleration value",
+            value: <TextField
+                type="number"
+                value={forwardAccelerationVal}
+                onChange={e => setSimMetaData({forwardAccelerationVal: parseFloat(e.target.value)})}
+                placeholder="Satellite simulation"
+            />,
+            unit: <>m/s<sup>2</sup></>
+        },
+        {
+            rowName: "Angular velocity",
+            value: <TextField
+                type="number"
+                value={angularVelocity}
+                onChange={e => setSimMetaData({angularVelocity: parseFloat(e.target.value)})}
+                placeholder="Satellite simulation"
+            />,
+            unit: "°/s"
         }
     ]
 

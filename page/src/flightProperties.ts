@@ -55,7 +55,7 @@ export class AzimuthMessageFrame extends MessageFrame {
 }
 
 export class FlightDataMessageFrame {
-    delivered = false
+    state: "Delivered" | "Not delivered" | "Error" = "Not delivered"
 
     constructor(
         public messageFrame: MessageFrame
@@ -64,8 +64,6 @@ export class FlightDataMessageFrame {
 
 export class SimMetaData {    
     constructor(
-        public calculationsRate: number = 30,
-        public dataRate: number = 1,
         public initialLongitude: number = 0,
         public initialLatitude: number = 0,
         public initialHeight: number = 1000,
@@ -75,7 +73,9 @@ export class SimMetaData {
         public windSpeed: number = 2,
         public windAzimuth: number = 2,
         public environmentSimulationInterval: number = 10,
-        public satelliteSimulationInterval: number = 1000
+        public satelliteSimulationInterval: number = 1000,
+        public forwardAccelerationVal: number = 10,
+        public angularVelocity: number = 20
     ){}    
 }
 
