@@ -3,18 +3,18 @@ import React, { FC } from "react"
 import { flightDataState } from "../index"
 import { sendMessage } from "../CSCP"
 import { useGlobalState } from "../globalState"
-import { MessageFrame, MessageCode, FlightDataMessageFrame } from "../flightProperties"
+import { MessageFrame, OperationCode, FlightDataMessageFrame } from "../flightProperties"
 
 interface props {
-    messageCode: MessageCode,
+    operationCode: OperationCode,
     buttonText: string
 }
 
-export const ShortMessageSection: FC<props> = ({ messageCode, buttonText }) => {
+export const ShortMessageSection: FC<props> = ({ operationCode, buttonText }) => {
     const [flightData, setFlightData] = useGlobalState(flightDataState)
 
     const handleSend = () => {
-        const message = new MessageFrame(messageCode)
+        const message = new MessageFrame(operationCode)
         sendMessage(message)
         setFlightData({messageFrames: [...flightData.messageFrames, new FlightDataMessageFrame(message)]})
     }

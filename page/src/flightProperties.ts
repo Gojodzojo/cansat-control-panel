@@ -4,7 +4,7 @@ export interface Vector {
     z: number
 }
 
-export enum MessageCode {
+export enum OperationCode {
     error = -1,
     nothing = 0,
     position = 1,
@@ -16,11 +16,11 @@ export enum MessageCode {
 
 export class MessageFrame {
     constructor(
-        readonly messageCode: MessageCode
+        readonly operationCode: OperationCode
     ){}
     
     toBytes() {
-        return new Uint8Array( new Int8Array([ this.messageCode ]).buffer )
+        return new Uint8Array( new Int8Array([ this.operationCode ]).buffer )
     }
 }
 
@@ -28,11 +28,11 @@ export class PositionMessageFrame extends MessageFrame {
     constructor(
         public longitude: number,
         public latitude: number,        
-    ){ super(MessageCode.position) }
+    ){ super(OperationCode.position) }
 
     toBytes() {
         return new Uint8Array([
-            ...new Uint8Array( new Int8Array([ this.messageCode ]).buffer ),
+            ...new Uint8Array( new Int8Array([ this.operationCode ]).buffer ),
             ...new Uint8Array( new Int32Array([
                 this.longitude * Math.pow(10, 6),
                 this.latitude * Math.pow(10, 6)
@@ -44,11 +44,11 @@ export class PositionMessageFrame extends MessageFrame {
 export class AzimuthMessageFrame extends MessageFrame {
     constructor(
         public azimuth: number,        
-    ){ super(MessageCode.azimuth) }
+    ){ super(OperationCode.azimuth) }
 
     toBytes() {        
         return new Uint8Array([
-            ...new Uint8Array( new Int8Array([ this.messageCode ]).buffer ),
+            ...new Uint8Array( new Int8Array([ this.operationCode ]).buffer ),
             ...new Uint8Array( new Int32Array([ this.azimuth ]).buffer )
         ])
     }
@@ -88,7 +88,7 @@ export interface DataFrame {
     time: number
     height: number
     rssi: number
-    messageCode: MessageCode
+    operationCode: OperationCode
 }
 
 export class FlightData {
@@ -155,5 +155,9 @@ export class FlightData {
 
     getTime(i: number): number {
         return this.frames[i].time
-    }    
+    }   
+    
+    getRssi(i: number): number {
+        return this.frames[i].rssi
+    }
 }

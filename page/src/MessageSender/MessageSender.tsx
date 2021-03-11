@@ -6,7 +6,7 @@ import { isRunningState } from "../index"
 import { ShortMessageSection } from "./ShortMessageSection"
 import { PositionSection } from "./PositionSection"
 import { AzimuthSection } from "./AzimuthSection"
-import { MessageCode } from "../flightProperties"
+import { OperationCode } from "../flightProperties"
 
 interface props {
     removeUtility: () => void
@@ -31,9 +31,9 @@ export const MessageSender: FC<props> = ({ removeUtility, openInNewWindow, bigWi
                                 <>
                                     <PositionSection />
                                     <AzimuthSection />
-                                    <ShortMessageSection buttonText="Send emergency message" messageCode={MessageCode.emergency} />
-                                    <ShortMessageSection buttonText="Send calibration message" messageCode={MessageCode.calibration} />
-                                    <ShortMessageSection buttonText="Send wait message" messageCode={MessageCode.wait} />
+                                    <ShortMessageSection buttonText="Send emergency message" operationCode={OperationCode.emergency} />
+                                    <ShortMessageSection buttonText="Send calibration message" operationCode={OperationCode.calibration} />
+                                    <ShortMessageSection buttonText="Send wait message" operationCode={OperationCode.wait} />
                                 </>
                                 :
                                 <TableRow>

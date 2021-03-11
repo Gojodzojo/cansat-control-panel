@@ -1,5 +1,5 @@
 import { currentFrameNumberState, flightDataState } from "."
-import { DataFrame, MessageCode, MessageFrame } from "./flightProperties"
+import { DataFrame, OperationCode, MessageFrame } from "./flightProperties"
 
 export let stopStation = async () => console.error("Error in watchForStationData.ts")
 export let sendStationMessage = async (messageFrame: MessageFrame) => console.error("Error in watchForStationData.ts")
@@ -36,13 +36,13 @@ export async function startStation(device: any) {
                 const { frames, messageFrames } = flightDataState.getValue()
                 const result: DataFrame = JSON.parse(jsonString)
                 result.time /= 1000
-                if(result.messageCode !== MessageCode.nothing) {
-                    if(result.messageCode === MessageCode.error) {
+                if(result.operationCode !== OperationCode.nothing) {
+                    if(result.operationCode === OperationCode.error) {
                         messageFrames[messageFrames.length - 1].state = "Error"
                     }
                     else {
                         for(let i = messageFrames.length - 1; i >= 0; i--) {
-                            if(messageFrames[i].messageFrame.messageCode === result.messageCode) {
+                            if(messageFrames[i].messageFrame.operationCode === result.operationCode) {
                                 messageFrames[i].state = "Delivered"
                                 break
                             }

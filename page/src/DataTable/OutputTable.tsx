@@ -22,15 +22,19 @@ export const OutputTable = () => {
                 rowName: "Time",
                 value: flightData.getTime(currentFrameNumber).toFixed(1),
                 unit: "s"
-            },            
+            },
+            {
+                rowName: "Rssi",
+                value: flightData.getRssi(currentFrameNumber)
+            },         
             {
                 rowName: "Longitude",
-                value: flightData.getLongitude(currentFrameNumber).toFixed(5),
+                value: flightData.getLongitude(currentFrameNumber),
                 unit: "°"
             },
             {
                 rowName: "Latitude",
-                value: flightData.getLatitude(currentFrameNumber).toFixed(5),
+                value: flightData.getLatitude(currentFrameNumber),
                 unit: "°"
             },
             {
@@ -92,7 +96,7 @@ export const OutputTable = () => {
                 rowName: "Acceleration z",
                 value: acceleration.z.toFixed(2),
                 unit: <>m/s<sup>2</sup></>
-            }                     
+            }
         ]
     }
     

@@ -1,5 +1,5 @@
 import { currentFrameNumberState, flightDataState, simMetaDataState } from "./index"
-import { DataFrame, MessageCode, MessageFrame, SimMetaData } from "./flightProperties"
+import { DataFrame, OperationCode, MessageFrame, SimMetaData } from "./flightProperties"
 
 export type MessageData = {
     action: "start"
@@ -15,13 +15,13 @@ const worker = new Worker("./simulationWorker.js")
 
 function readData({ data }: MessageEvent<DataFrame>) {
     const { frames, messageFrames } = flightDataState.getValue()
-    if(data.messageCode !== MessageCode.nothing) {
-        if(data.messageCode === MessageCode.error) {
+    if(data.operationCode !== OperationCode.nothing) {
+        if(data.operationCode === OperationCode.error) {
             messageFrames[messageFrames.length - 1].state = "Error"
         }
         else {
             for(let i = messageFrames.length - 1; i >= 0; i--) {
-                if(messageFrames[i].messageFrame.messageCode === data.messageCode) {
+                if(messageFrames[i].messageFrame.operationCode === data.operationCode) {
                     messageFrames[i].state = "Delivered"
                     break
                 }

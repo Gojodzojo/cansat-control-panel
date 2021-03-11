@@ -2,7 +2,7 @@ import { Paper, Table, TableBody, TableCell, TableContainer, TableRow } from "@m
 import React, { FC } from "react"
 import { currentFrameNumberState, flightDataState } from ".."
 import { useGlobalState } from "../globalState"
-import { AzimuthMessageFrame, MessageCode, PositionMessageFrame } from "../flightProperties"
+import { AzimuthMessageFrame, OperationCode, PositionMessageFrame } from "../flightProperties"
 import { UtilityWindow } from "../UtilityWindow/UtilityWindow"
 
 interface props {
@@ -18,8 +18,8 @@ export const MessagesList: FC<props> = ({ removeUtility, openInNewWindow, bigWin
     const rows = messageFrames.map(({messageFrame, state}, index) => {
         let rowName = ""
         let extraInfo = <></>
-        switch (messageFrame.messageCode) {
-            case MessageCode.position:
+        switch (messageFrame.operationCode) {
+            case OperationCode.position:
                 const { longitude, latitude } = messageFrame as PositionMessageFrame
                 rowName = "Position message"
                 extraInfo = <>
@@ -27,20 +27,20 @@ export const MessagesList: FC<props> = ({ removeUtility, openInNewWindow, bigWin
                     <TableCell> latitude: { latitude } </TableCell>
                 </>
                 break;
-            case MessageCode.azimuth:
+            case OperationCode.azimuth:
                 const { azimuth } = messageFrame as AzimuthMessageFrame
                 rowName = "Azimuth message"
                 extraInfo = <>
                     <TableCell> Azimuth: { azimuth }° </TableCell>
                 </>
                 break;
-            case MessageCode.emergency:
+            case OperationCode.emergency:
                 rowName = "Emergency message"
                 break
-            case MessageCode.calibration:
+            case OperationCode.calibration:
                 rowName = "Calibration message"
                 break
-            case MessageCode.wait:
+            case OperationCode.wait:
                 rowName = "Wait message"
                 break
             default:
