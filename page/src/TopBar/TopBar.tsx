@@ -3,11 +3,12 @@ import React, { FC, useState } from "react"
 import { AppBar, Button, IconButton, Toolbar } from "@material-ui/core"
 import menuIcon from "./menuIcon.svg"
 import { useGlobalState } from "../globalState"
-import { currentAppModeState, isPausedState, isRunningState, Utility } from "../index"
+import { currentAppModeState, flightDataState, isPausedState, isRunningState, Utility } from "../index"
 import { SideDrawer } from "./SideDrawer"
 import { UtilitiesOpener } from "./UtilitiesOpener"
 import pauseIcon from "./pauseIcon.svg"
 import playIcon from "./playIcon.svg"
+import saveIcon from "./saveIcon.svg"
 import { start, stop } from "../CSCP"
 
 interface props {
@@ -42,6 +43,15 @@ export const TopBar: FC<props> = ({addUtility}) => {
         setDevice(await (navigator as any).serial.requestPort())
     }
 
+    const saveJSON =() => {
+        const a = document.createElement("a");
+        const file = new Blob([ JSON.stringify(flightDataState.getValue().frames) ])
+        a.href = URL.createObjectURL(file);
+        a.download = "data.json";
+        a.click();
+        a.remove()
+    }
+
     return(
         <AppBar className="TopBar" position="static" >
             <Toolbar variant="dense">
@@ -49,10 +59,15 @@ export const TopBar: FC<props> = ({addUtility}) => {
                     <img src={menuIcon} className="menuIcon" alt="menu" />
                 </IconButton>
                 <UtilitiesOpener addUtility={addUtility} />
-                {isRunning &&
-                    <IconButton onClick={() => setIsPaused(!isPaused, true)}>
-                        <img src={isPaused? playIcon : pauseIcon} alt="play/pause" />
-                    </IconButton>
+                {isRunning && currentAppMode !== "Player" &&
+                    <>
+                        <IconButton onClick={() => setIsPaused(!isPaused, true)}>
+                            <img src={isPaused? playIcon : pauseIcon} alt="play/pause" />
+                        </IconButton>
+                        <IconButton onClick={saveJSON}>
+                            <img src={saveIcon} alt="play/pause" />
+                        </IconButton>
+                    </>
                 }                
                 {currentAppMode === "Station" &&
                     <Button
