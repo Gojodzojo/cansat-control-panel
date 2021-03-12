@@ -68,7 +68,7 @@ export const UnityVisualiser: FC<props> = ({removeUtility, openInNewWindow, bigW
     }, [ simMetaData.initialHeight, simMetaData.initialLatitude, simMetaData.initialLongitude, isUnityLoaded, isRunning ])
 
     useEffect(() => {                
-        if(isRunning && currentFrameNumber > 0 && isUnityLoaded) {
+        if((isRunning || currentAppMode === "Player") && currentFrameNumber > 0 && isUnityLoaded) {
             moveCanSat( flightData.getPosition(currentFrameNumber) )
         }
     }, [ flightData, currentAppMode, currentFrameNumber, isRunning ])

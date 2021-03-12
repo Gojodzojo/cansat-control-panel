@@ -1,5 +1,6 @@
 import { MessageFrame } from "./flightProperties";
-import { currentAppModeState, currentFrameNumberState, flightDataState, isPausedState, isRunningState } from "./index";
+import { currentAppModeState, isRunningState } from "./index";
+import { startPlayer, stopPlayer } from "./playFromFile";
 import { sendSimulatorMessage, startSimulator, stopSimulation } from "./watchForSimulatorData";
 import { sendStationMessage, startStation, stopStation } from "./watchForStationData";
 
@@ -14,13 +15,14 @@ export async function start(): Promise<void>;
  */
 export async function start(device: any): Promise<void>;
 
-export async function start(device?: any) {
-    isPausedState.setValue(false)
-    currentFrameNumberState.setValue(-1)
-    isRunningState.setValue(true)    
+export async function start(device?: any) {    
+    isRunningState.setValue(true)
 
     if(device !== undefined && currentAppModeState.getValue() === "Station") {
         await startStation(device)
+    }
+    else if(currentAppModeState.getValue() === "Player") {
+        startPlayer()
     }
     else {
         startSimulator()
@@ -31,13 +33,13 @@ export async function stop() {
     if(currentAppModeState.getValue() === "Station") {
         await stopStation()
     }
+    else if(currentAppModeState.getValue() === "Player") {
+        stopPlayer()
+    }
     else {
         stopSimulation()
     }
-
     isRunningState.setValue(false)
-    currentFrameNumberState.setValue(-1)
-    flightDataState.setValue({frames: [], messageFrames: []})
 }
 
 export async function sendMessage(messageFrame: MessageFrame) {

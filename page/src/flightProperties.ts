@@ -154,7 +154,7 @@ export class FlightData {
     }        
 
     getTime(i: number): number {
-        return this.frames[i].time
+        return this.frames[i].time / 1000
     }   
     
     getRssi(i: number): number {

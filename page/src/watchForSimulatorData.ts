@@ -32,7 +32,9 @@ function readData({ data }: MessageEvent<DataFrame>) {
     currentFrameNumberState.setValue(frames.length - 1)
 }
 
-export function startSimulator() {        
+export function startSimulator() {    
+    currentFrameNumberState.setValue(-1)
+    flightDataState.setValue({frames: [], messageFrames: []})
     worker.addEventListener("message", readData)
 
     // Set information about environment and satellite and start the simulation loop     
