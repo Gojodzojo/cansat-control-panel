@@ -59,17 +59,22 @@ export const Graph:FC<props> = ({removeUtility, openInNewWindow, bigWindow}) => 
         data.current = []
     }, [axisXProperty, axisYProperty])
 
-    useEffect(() => {
+    useEffect(() => {        
         if(currentFrameNumber === -1) {
             data.current = []
         }
-        else {        
-            for(let i = data.current.length; i <= currentFrameNumber; i++) {
-                data.current.push({
-                    x: pickProperties(flightMetaData, axisXProperty, i),
-                    y: pickProperties(flightMetaData, axisYProperty, i)
-                })
+        else {
+            if(data.current.length > currentFrameNumber) {
+                data.current.length = currentFrameNumber
             }
+            else {
+                for(let i = data.current.length; i <= currentFrameNumber; i++) {
+                    data.current.push({
+                        x: pickProperties(flightMetaData, axisXProperty, i),
+                        y: pickProperties(flightMetaData, axisYProperty, i)
+                    })
+                }
+            }            
         }
     }, [currentFrameNumber])
 

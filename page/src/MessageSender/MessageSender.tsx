@@ -2,7 +2,7 @@ import { Paper, Table, TableBody, TableCell, TableContainer, TableRow } from "@m
 import React, { FC } from "react"
 import { useGlobalState } from "../globalState"
 import { UtilityWindow } from "../UtilityWindow/UtilityWindow"
-import { isRunningState } from "../index"
+import { currentAppModeState, isRunningState } from "../index"
 import { ShortMessageSection } from "./ShortMessageSection"
 import { PositionSection } from "./PositionSection"
 import { AzimuthSection } from "./AzimuthSection"
@@ -15,7 +15,8 @@ interface props {
 }
 
 export const MessageSender: FC<props> = ({ removeUtility, openInNewWindow, bigWindow }) => {
-    const [isRunning] = useGlobalState(isRunningState)        
+    const [isRunning] = useGlobalState(isRunningState)
+    const [currentAppMode] = useGlobalState(currentAppModeState)
 
     return(
         <UtilityWindow
@@ -24,27 +25,27 @@ export const MessageSender: FC<props> = ({ removeUtility, openInNewWindow, bigWi
             removeUtility={removeUtility}
             openInNewWindow={openInNewWindow}
         >            
-                <TableContainer component={ props => <Paper {...props} className="DataTable"/> }>
-                    <Table>
-                        <TableBody>
-                            {isRunning?
-                                <>
-                                    <PositionSection />
-                                    <AzimuthSection />
-                                    <ShortMessageSection buttonText="Send emergency message" operationCode={OperationCode.emergency} />
-                                    <ShortMessageSection buttonText="Send calibration message" operationCode={OperationCode.calibration} />
-                                    <ShortMessageSection buttonText="Send wait message" operationCode={OperationCode.wait} />
-                                </>
-                                :
-                                <TableRow>
-                                    <TableCell>
-                                        Waiting for flight to start
-                                    </TableCell>
-                                </TableRow>
-                            }
-                        </TableBody>
-                    </Table>
-                </TableContainer>                    
+            <TableContainer component={ props => <Paper {...props} className="DataTable"/> }>
+                <Table>
+                    <TableBody>
+                        {isRunning && currentAppMode !== "Player"?
+                            <>
+                                <PositionSection />
+                                <AzimuthSection />
+                                <ShortMessageSection buttonText="Send emergency message" operationCode={OperationCode.emergency} />
+                                <ShortMessageSection buttonText="Send calibration message" operationCode={OperationCode.calibration} />
+                                <ShortMessageSection buttonText="Send wait message" operationCode={OperationCode.wait} />
+                            </>
+                            :
+                            <TableRow>
+                                <TableCell>
+                                    Waiting for flight to start
+                                </TableCell>
+                            </TableRow>
+                        }
+                    </TableBody>
+                </Table>
+            </TableContainer>                    
         </UtilityWindow>
     )
 

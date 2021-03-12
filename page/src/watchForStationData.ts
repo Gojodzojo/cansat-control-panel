@@ -5,6 +5,9 @@ export let stopStation = async () => console.error("Error in watchForStationData
 export let sendStationMessage = async (messageFrame: MessageFrame) => console.error("Error in watchForStationData.ts")
 
 export async function startStation(device: any) {
+    currentFrameNumberState.setValue(-1)
+    flightDataState.setValue({frames: [], messageFrames: []})
+
     await device.open({ baudRate: 115200 })
     const writer = (device.writable as WritableStream<Uint8Array>).getWriter()
     const textDecoder = new TextDecoderStream()
@@ -35,7 +38,6 @@ export async function startStation(device: any) {
             try {
                 const { frames, messageFrames } = flightDataState.getValue()
                 const result: DataFrame = JSON.parse(jsonString)
-                result.time /= 1000
                 if(result.operationCode !== OperationCode.nothing) {
                     if(result.operationCode === OperationCode.error) {
                         messageFrames[messageFrames.length - 1].state = "Error"

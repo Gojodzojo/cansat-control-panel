@@ -25,7 +25,6 @@ declare global {
       flightDataState: GlobalState<FlightData>
       isRunningState: GlobalState<boolean>
       currentFrameNumberState: GlobalState<number>
-      isPausedState: GlobalState<boolean>
       simMetaDataState: GlobalState<SimMetaData>
     }    
     defaultUtilities: Utility[]
@@ -37,7 +36,6 @@ if(window.opener === null) {
     currentAppModeState: new GlobalState<AppMode>("Simulator"),
     isRunningState: new GlobalState<boolean>(false),
     currentFrameNumberState: new GlobalState<number>(-1),
-    isPausedState: new GlobalState<boolean>(false),
     flightDataState: new GlobalState<FlightData>(new FlightData()),
     simMetaDataState: new GlobalState<SimMetaData>(new SimMetaData())
   }
@@ -47,7 +45,7 @@ else {
   window.sharedState = (window.opener as Window).sharedState
 } 
 
-export const {currentAppModeState, isRunningState, currentFrameNumberState, isPausedState, flightDataState, simMetaDataState} = window.sharedState
+export const {currentAppModeState, isRunningState, currentFrameNumberState, flightDataState, simMetaDataState} = window.sharedState
 
 
 ReactDOM.render(
